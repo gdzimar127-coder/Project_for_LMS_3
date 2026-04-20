@@ -26,11 +26,39 @@
 
         .flash {
             background: #fff3cd; color: #856404; padding: 12px;
-            margin: 20px auto; max-width: 420px; border-radius: 6px;
+            margin: 20px auto 0; max-width: 420px; border-radius: 6px;
             text-align: center; border: 1px solid #ffeeba;
         }
-
-        /* Модальное окно */
+        .main-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 120px);
+            gap: 20px;
+            padding: 20px;
+        }
+        .action-btn {
+            display: inline-block;
+            background: #2c3e50;
+            color: white;
+            padding: 14px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            width: 260px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .action-btn:hover {
+            background: #34495e;
+            transform: translateY(-2px);
+        }
+        .action-btn:active {
+            transform: translateY(0);
+        }
         .modal {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
             justify-content: center; align-items: center; z-index: 1000;
@@ -83,6 +111,10 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
+    <main class="main-actions">
+        <a href="/info" class="action-btn">Справка ГИА</a>
+        <a href="/training" class="action-btn">Перейти к тренировке</a>
+    </main>
 
     <div id="authModal" class="modal">
         <div class="modal-content">

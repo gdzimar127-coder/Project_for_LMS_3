@@ -1,5 +1,6 @@
-import sqlite3
 import os
+import sqlite3
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -75,6 +76,16 @@ def register():
     session['username'] = username
     flash('Регистрация прошла успешно!')
     return redirect(url_for('index'))
+
+
+@app.route('/info')
+def info():
+    return render_template('info.html')
+
+
+@app.route('/training')
+def training():
+    return render_template('training.html')
 
 
 @app.route('/logout')

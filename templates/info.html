@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Справка ГИА | Тренажёр ОГЭ</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; }
+
+        header {
+            background: #2c3e50; color: white; padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .title { font-size: 22px; font-weight: 600; }
+        .profile-btn, .logout-btn {
+            background: white; border: 2px solid black; color: black;
+            padding: 8px 18px; cursor: pointer; border-radius: 6px;
+            font-size: 14px; font-weight: 500; transition: 0.2s;
+        }
+        .profile-btn:hover { background: #e9ecef; }
+        .logout-btn { border-color: white; color: white; background: transparent; }
+        .logout-btn:hover { background: rgba(255,255,255,0.15); }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+
+        .info-container {
+            max-width: 900px; margin: 40px auto; padding: 30px;
+            background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .info-container h2 {
+            color: #2c3e50; border-bottom: 2px solid #eee;
+            padding-bottom: 10px; margin-top: 30px;
+        }
+        .info-container h2:first-child { margin-top: 0; }
+        .info-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .info-table th, .info-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .info-table th { background: #f8f9fa; color: #2c3e50; font-weight: 600; }
+        .info-links { list-style: none; padding: 0; }
+        .info-links li { margin: 10px 0; }
+        .info-links a { color: #2c3e50; text-decoration: none; font-weight: 500; }
+        .info-links a:hover { text-decoration: underline; }
+        .back-btn {
+            display: inline-block; margin-top: 30px; padding: 12px 24px;
+            background: #2c3e50; color: white; text-decoration: none;
+            border-radius: 6px; font-weight: 500; transition: 0.2s;
+        }
+        .back-btn:hover { background: #34495e; }
+        .note { color: #666; font-size: 14px; margin-top: 10px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title">Тренажёр ОГЭ</div>
+        {% if username %}
+            <div class="user-info">
+                <span>👤 {{ username }}</span>
+                <a href="{{ url_for('logout') }}"><button class="logout-btn">Выйти</button></a>
+            </div>
+        {% else %}
+            <button class="profile-btn" onclick="window.location.href='/'">Профиль</button>
+        {% endif %}
+    </header>
+
+    <main class="info-container">
+        <h2>📋 Общие сведения об ОГЭ</h2>
+        <p>Основной государственный экзамен (ОГЭ) — форма государственной итоговой аттестации по программам основного общего образования. Проводится для учащихся 9-х классов в рамках единого федерального расписания.</p>
+
+        <h2>📊 Минимальные баллы для получения аттестата</h2>
+        <table class="info-table">
+            <tr><th>Предмет</th><th>Минимальный балл</th></tr>
+            <tr><td>Русский язык</td><td>15</td></tr>
+            <tr><td>Математика</td><td>8</td></tr>
+            <tr><td>Обществознание</td><td>20</td></tr>
+            <tr><td>Информатика и ИКТ</td><td>10</td></tr>
+            <tr><td>История</td><td>12</td></tr>
+            <tr><td>Физика</td><td>10</td></tr>
+            <tr><td>Химия</td><td>12</td></tr>
+            <tr><td>Биология</td><td>16</td></tr>
+            <tr><td>Иностранные языки</td><td>48</td></tr>
+            <tr><td>Литература</td><td>15</td></tr>
+            <tr><td>География</td><td>17</td></tr>
+        </table>
+        <p class="note">* Нормативы утверждаются Рособрнадзором ежегодно перед экзаменационным периодом. Регионы могут устанавливать дополнительные требования для профильных классов.</p>
+
+        <h2>📜 Правила проведения</h2>
+        <ul>
+            <li>Обязательные предметы: русский язык и математика. Дополнительно сдаются 2 предмета по выбору.</li>
+            <li>Экзамены проходят в аккредитованных пунктах проведения (ППЭ) с видеонаблюдением.</li>
+            <li>Запрещено проносить средства связи, справочные материалы, кроме утверждённых ФИПИ.</li>
+            <li>Результаты вносятся в федеральную информационную систему в течение 5–10 рабочих дней.</li>
+            <li>При неудовлетворительном результате предусмотрена пересдача в резервные дни.</li>
+        </ul>
+
+        <h2>🔗 Официальные источники</h2>
+        <ul class="info-links">
+            <li><a href="https://fipi.ru" target="_blank">ФИПИ — Демоверсии, спецификации, кодификаторы</a></li>
+            <li><a href="https://obrnadzor.gov.ru" target="_blank">Рособрнадзор — Приказы и нормативные акты</a></li>
+            <li><a href="https://gia.edu.ru" target="_blank">Портал ГИА — Регистрация и расписание</a></li>
+            <li><a href="https://minobrnauki.gov.ru" target="_blank">Министерство просвещения РФ</a></li>
+        </ul>
+
+        <a href="/" class="back-btn">← Вернуться на главную</a>
+    </main>
+</body>
+</html>

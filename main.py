@@ -1,11 +1,12 @@
 import os
 import sqlite3
+import re  # ← Добавляем для проверки пароля
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24).hex()  # Для безопасности сессий
+app.secret_key = os.urandom(24).hex()
 DB_PATH = 'users.db'
 
 
@@ -24,6 +25,16 @@ def init_db():
                         password_hash TEXT NOT NULL)''')
         conn.commit()
         conn.close()
+
+
+def is_password_strong(password):
+    if len(password) < 6:
+        return False, "Пароль должен содержать минимум 6 символов"
+    if not re.search(r'[A-Za-zА-Яа-я]', password):
+        return False, "Пароль должен содержать хотя бы одну букву"
+    if not re.search(r'\d', password):
+        return False, "Пароль должен содержать хотя бы одну цифру"
+    return True, ""
 
 
 @app.route('/')
@@ -62,7 +73,13 @@ def register():
         flash('Заполните все поля')
         return redirect(url_for('index'))
 
+    is_strong, error_msg = is_password_strong(password)
+    if not is_strong:
+        flash(error_msg)
+        return redirect(url_for('index'))
+
     conn = get_db()
+
     if conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone():
         flash('Пользователь с таким логином уже существует')
         conn.close()

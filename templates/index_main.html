@@ -7,7 +7,6 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; }
-
         header {
             background: #2c3e50; color: white; padding: 15px 20px;
             display: flex; justify-content: space-between; align-items: center;
@@ -23,14 +22,23 @@
         .logout-btn { border-color: white; color: white; background: transparent; }
         .logout-btn:hover { background: rgba(255,255,255,0.15); }
         .user-info { display: flex; align-items: center; gap: 12px; }
-
         .flash {
             background: #fff3cd; color: #856404; padding: 12px;
-            margin: 20px auto; max-width: 420px; border-radius: 6px;
+            margin: 20px auto 0; max-width: 420px; border-radius: 6px;
             text-align: center; border: 1px solid #ffeeba;
         }
-
-        /* Модальное окно */
+        .main-actions {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: calc(100vh - 120px);
+            gap: 20px; padding: 20px;
+        }
+        .action-btn {
+            display: inline-block; background: #2c3e50; color: white;
+            padding: 14px 30px; text-decoration: none; border-radius: 8px;
+            font-size: 16px; font-weight: 500; width: 260px; text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: background 0.2s, transform 0.1s;
+        }
+        .action-btn:hover { background: #34495e; transform: translateY(-2px); }
         .modal {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
             justify-content: center; align-items: center; z-index: 1000;
@@ -40,47 +48,24 @@
             width: 340px; position: relative; box-shadow: 0 6px 16px rgba(0,0,0,0.2);
         }
         .close { position: absolute; top: 10px; right: 14px; cursor: pointer; font-size: 24px; color: #666; }
-
         .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .tab {
             flex: 1; padding: 12px; text-align: center; cursor: pointer;
             color: #777; font-weight: 500; transition: 0.2s; background: none; border: none;
         }
         .tab.active { color: #2c3e50; border-bottom: 2px solid #2c3e50; }
-
         .form-view { display: none; }
         .form-view.active { display: block; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         input {
             width: 100%; padding: 10px; margin: 8px 0 14px;
             border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
-        }
-        input:invalid:not(:placeholder-shown) {
-            border-color: #dc3545;
-        }
-        input:valid:not(:placeholder-shown) {
-            border-color: #28a745;
         }
         button[type="submit"] {
             width: 100%; padding: 10px; background: #2c3e50; color: white;
             border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;
         }
         button[type="submit"]:hover { background: #34495e; }
-
-        /* Подсказка пароля */
-        .password-hint {
-            font-size: 0.85em; color: #666; margin-top: -10px; margin-bottom: 10px;
-            line-height: 1.4;
-        }
-        .password-hint.valid { color: #28a745; }
-        .password-hint.invalid { color: #dc3545; }
-        .check-item { display: flex; align-items: center; gap: 6px; }
-        .check-item::before {
-            content: "○"; font-weight: bold; transition: color 0.2s;
-        }
-        .check-item.pass::before { content: "✓"; color: #28a745; }
-        .check-item.fail::before { content: "✗"; color: #dc3545; }
     </style>
 </head>
 <body>
@@ -104,6 +89,11 @@
         {% endif %}
     {% endwith %}
 
+    <main class="main-actions">
+        <a href="/info" class="action-btn">Справка ГИА</a>
+        <a href="/training" class="action-btn">Перейти к тренировке</a>
+    </main>
+
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModal">&times;</span>
@@ -111,7 +101,6 @@
                 <button class="tab active" data-view="login">Вход</button>
                 <button class="tab" data-view="register">Регистрация</button>
             </div>
-
             <div id="login-view" class="form-view active">
                 <form action="{{ url_for('login') }}" method="POST">
                     <input type="text" name="username" placeholder="Логин" required autocomplete="username">
@@ -119,28 +108,11 @@
                     <button type="submit">Войти</button>
                 </form>
             </div>
-
             <div id="register-view" class="form-view">
-                <form action="{{ url_for('register') }}" method="POST" id="registerForm">
+                <form action="{{ url_for('register') }}" method="POST">
                     <input type="text" name="username" placeholder="Придумайте логин" required autocomplete="username">
-
-                    <input type="password"
-                           name="password"
-                           id="regPassword"
-                           placeholder="Придумайте пароль"
-                           required
-                           autocomplete="new-password"
-                           pattern="(?=.*\d)(?=.*[A-Za-zА-Яа-я]).{6,}"
-                           title="Минимум 6 символов, хотя бы одна буква и одна цифра">
-
-                    <!-- 🔍 Подсказка с индикаторами -->
-                    <div class="password-hint" id="passwordHint">
-                        <div class="check-item" id="checkLength">Минимум 6 символов</div>
-                        <div class="check-item" id="checkLetter">Хотя бы одна буква</div>
-                        <div class="check-item" id="checkDigit">Хотя бы одна цифра</div>
-                    </div>
-
-                    <button type="submit" id="regSubmit" disabled>Зарегистрироваться</button>
+                    <input type="password" name="password" placeholder="Придумайте пароль" required autocomplete="new-password">
+                    <button type="submit">Зарегистрироваться</button>
                 </form>
             </div>
         </div>
@@ -149,81 +121,16 @@
     <script>
         const modal = document.getElementById('authModal');
         document.getElementById('openModal').onclick = () => modal.style.display = 'flex';
-        document.getElementById('closeModal').onclick = () => {
-            modal.style.display = 'none';
-            resetPasswordValidation();
-        };
-        window.onclick = (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-                resetPasswordValidation();
-            }
-        };
-
+        document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.form-view').forEach(v => v.classList.remove('active'));
                 tab.classList.add('active');
                 document.getElementById(tab.dataset.view + '-view').classList.add('active');
-                if (tab.dataset.view !== 'register') resetPasswordValidation();
             });
         });
-
-        const passwordInput = document.getElementById('regPassword');
-        const regForm = document.getElementById('registerForm');
-        const regSubmit = document.getElementById('regSubmit');
-        const checkLength = document.getElementById('checkLength');
-        const checkLetter = document.getElementById('checkLetter');
-        const checkDigit = document.getElementById('checkDigit');
-        const passwordHint = document.getElementById('passwordHint');
-
-        function checkPassword(pwd) {
-            const checks = {
-                length: pwd.length >= 6,
-                letter: /[A-Za-zА-Яа-я]/.test(pwd),
-                digit: /\d/.test(pwd)
-            };
-
-            updateCheck(checkLength, checks.length);
-            updateCheck(checkLetter, checks.letter);
-            updateCheck(checkDigit, checks.digit);
-
-            if (pwd.length > 0) {
-                passwordHint.style.display = 'block';
-                const allValid = checks.length && checks.letter && checks.digit;
-                passwordHint.className = 'password-hint ' + (allValid ? 'valid' : 'invalid');
-                regSubmit.disabled = !allValid;
-            } else {
-                resetPasswordValidation();
-            }
-
-            return checks.length && checks.letter && checks.digit;
-        }
-
-        function updateCheck(element, isValid) {
-            element.className = 'check-item ' + (isValid ? 'pass' : 'fail');
-        }
-
-        function resetPasswordValidation() {
-            passwordHint.style.display = 'none';
-            passwordHint.className = 'password-hint';
-            regSubmit.disabled = false;
-            [checkLength, checkLetter, checkDigit].forEach(el => {
-                el.className = 'check-item';
-            });
-        }
-
-        if (passwordInput) {
-            passwordInput.addEventListener('input', (e) => checkPassword(e.target.value));
-
-            regForm.addEventListener('submit', (e) => {
-                if (!checkPassword(passwordInput.value)) {
-                    e.preventDefault();
-                    passwordHint.style.display = 'block';
-                    passwordHint.className = 'password-hint invalid';
-                }
-            });
-        }
     </script>
 </body>
+</html>

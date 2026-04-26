@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Справка ГИА | Тренажёр ОГЭ</title>
+    <title>Справка ГИА/ЕГЭ | Тренажёр ОГЭ</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; }
-
         header {
             background: #2c3e50; color: white; padding: 15px 20px;
             display: flex; justify-content: space-between; align-items: center;
@@ -23,19 +22,30 @@
         .logout-btn { border-color: white; color: white; background: transparent; }
         .logout-btn:hover { background: rgba(255,255,255,0.15); }
         .user-info { display: flex; align-items: center; gap: 12px; }
-
         .info-container {
-            max-width: 900px; margin: 40px auto; padding: 30px;
+            max-width: 1000px; margin: 40px auto; padding: 30px;
             background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .info-container h2 {
-            color: #2c3e50; border-bottom: 2px solid #eee;
-            padding-bottom: 10px; margin-top: 30px;
+        .exam-tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 25px; }
+        .exam-tab {
+            flex: 1; padding: 14px; text-align: center; cursor: pointer;
+            color: #777; font-weight: 600; font-size: 16px; transition: 0.2s;
+            background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px;
         }
+        .exam-tab.active { color: #2c3e50; border-bottom-color: #2c3e50; background: #f8f9fa; }
+        .exam-content { display: none; animation: fadeIn 0.25s; }
+        .exam-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .info-container h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; }
         .info-container h2:first-child { margin-top: 0; }
-        .info-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        .info-table th, .info-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .info-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px; }
+        .info-table th, .info-table td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #eee; }
         .info-table th { background: #f8f9fa; color: #2c3e50; font-weight: 600; }
+        .info-table td:first-child, .info-table th:first-child { text-align: left; padding-left: 12px; }
+        .info-table tr:hover { background: #f8f9fa; }
+        .grade-3 { color: #856404; font-weight: 500; }
+        .grade-4 { color: #0c5460; font-weight: 500; }
+        .grade-5 { color: #155724; font-weight: 600; }
         .info-links { list-style: none; padding: 0; }
         .info-links li { margin: 10px 0; }
         .info-links a { color: #2c3e50; text-decoration: none; font-weight: 500; }
@@ -46,7 +56,14 @@
             border-radius: 6px; font-weight: 500; transition: 0.2s;
         }
         .back-btn:hover { background: #34495e; }
-        .note { color: #666; font-size: 14px; margin-top: 10px; font-style: italic; }
+        .note { color: #666; font-size: 13px; margin-top: 10px; font-style: italic; line-height: 1.4; }
+        .badge { display: inline-block; padding: 3px 8px; background: #e9ecef; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+        .badge-oge { background: #d1ecf1; color: #0c5460; }
+        .badge-ege { background: #d4edda; color: #155724; }
+        @media (max-width: 768px) {
+            .info-table { font-size: 12px; }
+            .info-container { padding: 20px; margin: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -61,46 +78,98 @@
             <button class="profile-btn" onclick="window.location.href='/'">Профиль</button>
         {% endif %}
     </header>
-
     <main class="info-container">
-        <h2>📋 Общие сведения об ОГЭ</h2>
-        <p>Основной государственный экзамен (ОГЭ) — форма государственной итоговой аттестации по программам основного общего образования. Проводится для учащихся 9-х классов в рамках единого федерального расписания.</p>
-
-        <h2>📊 Минимальные баллы для получения аттестата</h2>
-        <table class="info-table">
-            <tr><th>Предмет</th><th>Минимальный балл</th></tr>
-            <tr><td>Русский язык</td><td>15</td></tr>
-            <tr><td>Математика</td><td>8</td></tr>
-            <tr><td>Обществознание</td><td>20</td></tr>
-            <tr><td>Информатика и ИКТ</td><td>10</td></tr>
-            <tr><td>История</td><td>12</td></tr>
-            <tr><td>Физика</td><td>10</td></tr>
-            <tr><td>Химия</td><td>12</td></tr>
-            <tr><td>Биология</td><td>16</td></tr>
-            <tr><td>Иностранные языки</td><td>48</td></tr>
-            <tr><td>Литература</td><td>15</td></tr>
-            <tr><td>География</td><td>17</td></tr>
-        </table>
-        <p class="note">* Нормативы утверждаются Рособрнадзором ежегодно перед экзаменационным периодом. Регионы могут устанавливать дополнительные требования для профильных классов.</p>
-
-        <h2>📜 Правила проведения</h2>
-        <ul>
-            <li>Обязательные предметы: русский язык и математика. Дополнительно сдаются 2 предмета по выбору.</li>
-            <li>Экзамены проходят в аккредитованных пунктах проведения (ППЭ) с видеонаблюдением.</li>
-            <li>Запрещено проносить средства связи, справочные материалы, кроме утверждённых ФИПИ.</li>
-            <li>Результаты вносятся в федеральную информационную систему в течение 5–10 рабочих дней.</li>
-            <li>При неудовлетворительном результате предусмотрена пересдача в резервные дни.</li>
-        </ul>
-
+        <div class="exam-tabs">
+            <button class="exam-tab active" data-exam="oge">ОГЭ <span class="badge badge-oge">9 класс</span></button>
+            <button class="exam-tab" data-exam="ege">ЕГЭ <span class="badge badge-ege">11 класс</span></button>
+        </div>
+        <div id="oge-content" class="exam-content active">
+            <h2>📋 Общие сведения об ОГЭ</h2>
+            <p>Основной государственный экзамен (ОГЭ) — форма государственной итоговой аттестации по программам основного общего образования. Проводится для учащихся 9-х классов.</p>
+            <h2>📊 Шкала перевода баллов в оценки (ОГЭ)</h2>
+            <table class="info-table">
+                <thead><tr><th>Предмет</th><th>Мин. для аттестата (3)</th><th class="grade-4">Оценка «4»</th><th class="grade-5">Оценка «5»</th><th>Макс. балл</th></tr></thead>
+                <tbody>
+                    <tr><td>Русский язык</td><td class="grade-3">15</td><td class="grade-4">25–33</td><td class="grade-5">34–39</td><td>39</td></tr>
+                    <tr><td>Математика</td><td class="grade-3">8</td><td class="grade-4">15–21</td><td class="grade-5">22–31</td><td>31</td></tr>
+                    <tr><td>Обществознание</td><td class="grade-3">20</td><td class="grade-4">30–39</td><td class="grade-5">40–45</td><td>45</td></tr>
+                    <tr><td>Информатика</td><td class="grade-3">10</td><td class="grade-4">15–19</td><td class="grade-5">20–22</td><td>22</td></tr>
+                    <tr><td>История</td><td class="grade-3">12</td><td class="grade-4">23–33</td><td class="grade-5">34–44</td><td>44</td></tr>
+                    <tr><td>Физика</td><td class="grade-3">10</td><td class="grade-4">20–30</td><td class="grade-5">31–45</td><td>45</td></tr>
+                    <tr><td>Химия</td><td class="grade-3">12</td><td class="grade-4">23–35</td><td class="grade-5">36–46</td><td>46</td></tr>
+                    <tr><td>Биология</td><td class="grade-3">16</td><td class="grade-4">30–44</td><td class="grade-5">45–58</td><td>58</td></tr>
+                    <tr><td>Иностранные языки</td><td class="grade-3">48</td><td class="grade-4">58–69</td><td class="grade-5">70–84</td><td>84</td></tr>
+                    <tr><td>Литература</td><td class="grade-3">15</td><td class="grade-4">25–34</td><td class="grade-5">35–44</td><td>44</td></tr>
+                    <tr><td>География</td><td class="grade-3">17</td><td class="grade-4">26–34</td><td class="grade-5">35–42</td><td>42</td></tr>
+                </tbody>
+            </table>
+            <p class="note">* Шкала утверждается Рособрнадзором ежегодно.</p>
+            <h2>📜 Правила проведения</h2>
+            <ul>
+                <li>Обязательные предметы: русский язык и математика + 2 предмета по выбору.</li>
+                <li>Экзамены проходят в аккредитованных ППЭ с видеонаблюдением.</li>
+                <li>Запрещено проносить средства связи и справочные материалы (кроме утверждённых ФИПИ).</li>
+                <li>Пересдача возможна в резервные дни.</li>
+            </ul>
+        </div>
+        <div id="ege-content" class="exam-content">
+            <h2>📋 Общие сведения об ЕГЭ</h2>
+            <p>Единый государственный экзамен (ЕГЭ) — форма государственной итоговой аттестации по программам среднего общего образования. Обязателен для поступления в вузы РФ.</p>
+            <h2>📊 Шкала перевода баллов в оценки (ЕГЭ)</h2>
+            <table class="info-table">
+                <thead><tr><th>Предмет</th><th>Мин. для аттестата (3)</th><th class="grade-4">Оценка «4»</th><th class="grade-5">Оценка «5»</th><th>Мин. для вуза*</th><th>Макс.</th></tr></thead>
+                <tbody>
+                    <tr><td>Русский язык</td><td class="grade-3">24</td><td class="grade-4">36–57</td><td class="grade-5">58–100</td><td>36–40</td><td>100</td></tr>
+                    <tr><td>Математика (профиль)</td><td class="grade-3">6</td><td class="grade-4">12–20</td><td class="grade-5">21–100</td><td>27–39</td><td>100</td></tr>
+                    <tr><td>Математика (база)</td><td class="grade-3">3</td><td>4–6</td><td>7–10</td><td>—</td><td>10</td></tr>
+                    <tr><td>Обществознание</td><td class="grade-3">24</td><td class="grade-4">42–59</td><td class="grade-5">60–100</td><td>42–45</td><td>100</td></tr>
+                    <tr><td>Информатика</td><td class="grade-3">40</td><td class="grade-4">58–75</td><td class="grade-5">76–100</td><td>44–50</td><td>100</td></tr>
+                    <tr><td>История</td><td class="grade-3">32</td><td class="grade-4">44–55</td><td class="grade-5">56–100</td><td>32–35</td><td>100</td></tr>
+                    <tr><td>Физика</td><td class="grade-3">36</td><td class="grade-4">53–67</td><td class="grade-5">68–100</td><td>36–39</td><td>100</td></tr>
+                    <tr><td>Химия</td><td class="grade-3">36</td><td class="grade-4">52–67</td><td class="grade-5">68–100</td><td>36–39</td><td>100</td></tr>
+                    <tr><td>Биология</td><td class="grade-3">36</td><td class="grade-4">52–67</td><td class="grade-5">68–100</td><td>36–40</td><td>100</td></tr>
+                    <tr><td>Иностранные языки</td><td class="grade-3">22</td><td class="grade-4">59–79</td><td class="grade-5">80–100</td><td>40–45</td><td>100</td></tr>
+                    <tr><td>Литература</td><td class="grade-3">32</td><td class="grade-4">50–67</td><td class="grade-5">68–100</td><td>32–40</td><td>100</td></tr>
+                    <tr><td>География</td><td class="grade-3">37</td><td class="grade-4">51–64</td><td class="grade-5">65–100</td><td>37–40</td><td>100</td></tr>
+                </tbody>
+            </table>
+            <p class="note">* Пороговые баллы для поступления устанавливаются каждым вузом индивидуально.</p>
+            <h2>📜 Правила проведения</h2>
+            <ul>
+                <li>Обязательные предметы: русский язык и математика (база или профиль).</li>
+                <li>Результаты действительны 4 года.</li>
+                <li>На экзамен разрешено: чёрная гелевая ручка, паспорт, вода, шоколадка. Калькуляторы — только для химии/физики/географии.</li>
+                <li>Апелляция подаётся в течение 2 рабочих дней.</li>
+            </ul>
+        </div>
         <h2>🔗 Официальные источники</h2>
         <ul class="info-links">
-            <li><a href="https://fipi.ru" target="_blank">ФИПИ — Демоверсии, спецификации, кодификаторы</a></li>
-            <li><a href="https://obrnadzor.gov.ru" target="_blank">Рособрнадзор — Приказы и нормативные акты</a></li>
-            <li><a href="https://gia.edu.ru" target="_blank">Портал ГИА — Регистрация и расписание</a></li>
-            <li><a href="https://minobrnauki.gov.ru" target="_blank">Министерство просвещения РФ</a></li>
+            <li><a href="https://fipi.ru" target="_blank">ФИПИ — Демоверсии, кодификаторы</a></li>
+            <li><a href="https://obrnadzor.gov.ru" target="_blank">Рособрнадзор — Приказы и нормативы</a></li>
+            <li><a href="https://gia.edu.ru" target="_blank">Портал ГИА — Расписание и регистрация</a></li>
+            <li><a href="https://ege.ru" target="_blank">Официальный портал ЕГЭ</a></li>
         </ul>
-
         <a href="/" class="back-btn">← Вернуться на главную</a>
     </main>
+    <script>
+        document.querySelectorAll('.exam-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.exam-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.exam-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.exam + '-content').classList.add('active');
+                localStorage.setItem('preferredExam', tab.dataset.exam);
+            });
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('preferredExam');
+            if (saved && ['oge', 'ege'].includes(saved)) {
+                document.querySelectorAll('.exam-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.exam-content').forEach(c => c.classList.remove('active'));
+                document.querySelector(`.exam-tab[data-exam="${saved}"]`).classList.add('active');
+                document.getElementById(saved + '-content').classList.add('active');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -2,18 +2,18 @@ import os
 import sqlite3
 import re
 import json
-from asyncio import tasks
 from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'super-secret-key-change-me'
+app.secret_key = 'super-secret-key-change-me-in-production'
 DB_PATH = 'users.db'
 
 
 def get_db():
+    """Подключение к базе данных"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
@@ -21,12 +21,12 @@ def get_db():
 
 
 def init_db():
-    """Инициализация БД и добавление демо-данных"""
+    """Инициализация БД и наполнение контентом (Банк заданий)"""
     with app.app_context():
         conn = get_db()
         c = conn.cursor()
 
-        # 1. Таблицы
+        # 1. Создание таблиц
         c.execute('''CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
@@ -34,6 +34,7 @@ def init_db():
             password_hash TEXT NOT NULL
         )''')
 
+        # Миграция для старых версий БД
         try:
             c.execute("ALTER TABLE users ADD COLUMN email TEXT")
         except sqlite3.OperationalError:
@@ -88,7 +89,7 @@ def init_db():
             FOREIGN KEY(attempt_id) REFERENCES attempts(id) ON DELETE CASCADE
         )''')
 
-        # 2. Добавление ВСЕХ предметов ОГЭ (14 предметов)
+        # 2. Добавление всех предметов ОГЭ (14 предметов)
         if c.execute('SELECT COUNT(*) FROM subjects').fetchone()[0] == 0:
             subjects = [
                 (1, 'Математика'), (2, 'Русский язык'), (3, 'Информатика'),
@@ -99,59 +100,40 @@ def init_db():
             ]
             c.executemany('INSERT INTO subjects (id, name) VALUES (?, ?)', subjects)
 
-            # РАЗДЕЛЫ ДЛЯ ВСЕХ ПРЕДМЕТОВ
+            # 3. РАЗДЕЛЫ КЭС (Структура банка материалов)
             all_sections = [
-                # Математика (1)
+                # Математика
                 (1, 'Числа и вычисления', '1'), (1, 'Алгебраические выражения', '2'),
                 (1, 'Уравнения и неравенства', '3'), (1, 'Числовые последовательности', '4'),
                 (1, 'Функции', '5'), (1, 'Координаты на прямой и плоскости', '6'),
                 (1, 'Геометрия', '7'), (1, 'Вероятность и статистика', '8'),
 
-                # Русский язык (2)
+                # Русский язык
                 (2, 'Язык и речь', '1'), (2, 'Текст', '2'),
                 (2, 'Функциональные разновидности языка', '3'),
                 (2, 'Система языка', '4'), (2, 'Культура речи', '5'),
                 (2, 'Орфография', '6'), (2, 'Пунктуация', '7'),
                 (2, 'Выразительность русской речи', '8'),
 
-                # Информатика (3)
-                (3, 'Цифровая грамотность', '1'), (3, 'Теоретические основы информатики', '2'),
+                # Информатика
+                (3, 'Цифровая грамотность', '1'), (3, 'Теоретические основы', '2'),
                 (3, 'Алгоритмы и программирование', '3'), (3, 'Информационные технологии', '4'),
 
-                # Обществознание (4)
-                (4, 'Человек и его социальное окружение', '1'),
-                (4, 'Общество, в котором мы живём', '2'),
-                (4, 'Человек в мире культуры', '3'), (4, 'Человек в экономических отношениях', '4'),
-                (4, 'Человек в системе социальных отношений', '5'),
-                (4, 'Человек в политическом измерении', '6'), (4, 'Гражданин и государство', '7'),
-                (4, 'Человек как участник правовых отношений', '8'),
+                # Обществознание
+                (4, 'Человек и общество', '1'), (4, 'Экономика', '3'),
+                (4, 'Политика и право', '5'), (4, 'Социальная сфера', '4'),
 
-                # Физика (5)
-                (5, 'Механические явления', '1'),
-                (5, 'Тепловые явления', '2'),
-                (5, 'Электромагнитные явления', '3'),
-                (5, 'Квантовые явления', '4'),
+                # Физика
+                (5, 'Механические явления', '1'), (5, 'Тепловые явления', '2'),
+                (5, 'Электромагнитные явления', '3'), (5, 'Квантовые явления', '4'),
 
-                # Биология (6)
-                (6, 'Биология как наука', '1'), (6, 'Многообразие организмов', '2'),
-                (6, 'Среда обитания и экология', '3'), (6, 'Человек и его здоровье', '7'),
+                # История, География, Химия, Биология (Базовые разделы)
+                (6, 'Биология как наука', '1'), (6, 'Человек и здоровье', '7'),
+                (7, 'География России', '7'), (7, 'Оболочки Земли', '4'),
+                (8, 'Первоначальные химические понятия', '1'), (8, 'Химические реакции', '5'),
+                (9, 'От Руси к Российскому государству', '1'), (9, 'История России XX века', '4'),
 
-                # География (7)
-                (7, 'Географическое изучение Земли', '1'), (7, 'Оболочки Земли', '4'),
-                (7, 'География России', '7'),
-
-                # Химия (8)
-                (8, 'Первоначальные химические понятия', '1'),
-                (8, 'Периодический закон и строение атомов', '2'),
-                (8, 'Химические реакции', '5'),
-
-                # История (9)
-                (9, 'От Руси к Российскому государству', '1'),
-                (9, 'Россия в XVI–XVII веках', '2'),
-                (9, 'Россия в XIX – начале XX вв.', '4'),
-                (9, 'Всеобщая история', '5'),
-
-                # === ЛИТЕРАТУРА (10) - ПОЛНЫЙ СПИСОК ПО ФИПИ ===
+                # === ЛИТЕРАТУРА (Полный список по ФИПИ) ===
                 (10, '«Слово о полку Игореве»', '1'),
                 (10, 'М.В. Ломоносов. Стихотворения', '2'),
                 (10, 'Д.И. Фонвизин. Комедия «Недоросль»', '3'),
@@ -182,7 +164,7 @@ def init_db():
                 (10, 'Ф.М. Достоевский. Произведения', '28'),
                 (10, 'Л.Н. Толстой. Произведения', '29'),
                 (10, 'А.П. Чехов. Рассказы', '30'),
-                (10, 'A.К. Толстой. Стихотворения', '31'),
+                (10, 'А.К. Толстой. Стихотворения', '31'),
                 (10, 'И.А. Бунин. Стихотворения', '32'),
                 (10, 'А.А. Блок. Стихотворения', '33'),
                 (10, 'В.В. Маяковский. Стихотворения', '34'),
@@ -200,15 +182,15 @@ def init_db():
                 (10, 'Авторы лирики XX–XXI вв.', '46'),
                 (10, 'Произведения зарубежной литературы', '47'),
 
-                # Иностранные языки (11-14)
-                (11, 'Коммуникативные умения', '1'), (11, 'Языковые знания и навыки', '2'),
-                (12, 'Коммуникативные умения', '1'), (12, 'Языковые знания и навыки', '2'),
-                (13, 'Коммуникативные умения', '1'), (13, 'Языковые знания и навыки', '2'),
-                (14, 'Коммуникативные умения', '1'), (14, 'Языковые знания и навыки', '2'),
+                # Языки
+                (11, 'Коммуникативные умения', '1'), (11, 'Языковые знания', '2'),
+                (12, 'Коммуникативные умения', '1'), (12, 'Языковые знания', '2'),
+                (13, 'Коммуникативные умения', '1'), (13, 'Языковые знания', '2'),
+                (14, 'Коммуникативные умения', '1'), (14, 'Языковые знания', '2'),
             ]
             c.executemany('INSERT INTO sections (subject_id, name, section_code) VALUES (?, ?, ?)', all_sections)
 
-            # Демо-задания
+            # 4. Демо-задания
             tasks_data = [
                 (1, 1, '1.1', 'Натуральные числа', 'easy', 'Вычислите: 3/4 + 1/2', json.dumps(["1", "5/4", "4/6"]),
                  "5/4", "3/4 + 2/4 = 5/4"),
@@ -225,14 +207,15 @@ def init_db():
                  "Ньютон", "Сила измеряется в Ньютонах"),
             ]
 
-            for t in tasks_data:  
+            for t in tasks_data:
                 c.execute('''INSERT INTO tasks 
-                        (subject_id, section_id, fipi_code, topic_name, difficulty, question_text, options_json, correct_answer, solution_text)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', t)
-
+                    (subject_id, section_id, fipi_code, topic_name, difficulty, question_text, options_json, correct_answer, solution_text)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', t)
             conn.commit()
         conn.close()
 
+
+# --- Декораторы и утилиты ---
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -240,9 +223,11 @@ def login_required(f):
             flash('Пожалуйста, войдите в систему', 'warning')
             return redirect(url_for('index'))
         return f(*args, **kwargs)
+
     return decorated
 
 
+# --- Маршруты: Авторизация ---
 @app.route('/')
 def index():
     return render_template('index_main.html', username=session.get('username'))
@@ -264,7 +249,8 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
-    u, e, p = request.form.get('username', '').strip(), request.form.get('email', '').strip(), request.form.get('password', '').strip()
+    u, e, p = request.form.get('username', '').strip(), request.form.get('email', '').strip(), request.form.get(
+        'password', '').strip()
     if len(p) < 6 or not re.search(r'\d', p) or not re.search(r'[A-Za-z]', p):
         flash('Пароль: мин. 6 символов, буква и цифра', 'error')
         return redirect(url_for('index'))
@@ -275,7 +261,8 @@ def register():
         conn.close()
         return redirect(url_for('index'))
 
-    conn.execute('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', (u, e, generate_password_hash(p)))
+    conn.execute('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+                 (u, e, generate_password_hash(p)))
     conn.commit()
     conn.close()
     session['username'] = u
@@ -290,6 +277,7 @@ def logout():
     return redirect(url_for('index'))
 
 
+# --- Маршруты: Навигация ---
 @app.route('/subjects')
 def subjects_page():
     subjects = get_db().execute('SELECT * FROM subjects ORDER BY id').fetchall()
@@ -302,12 +290,40 @@ def subjects_page():
 def topics_page(subject_id):
     conn = get_db()
     subject = conn.execute('SELECT * FROM subjects WHERE id = ?', (subject_id,)).fetchone()
-    sections = conn.execute('SELECT * FROM sections WHERE subject_id = ? ORDER BY section_code', (subject_id,)).fetchall()
-    tasks = conn.execute('SELECT DISTINCT fipi_code, topic_name FROM tasks WHERE subject_id = ?', (subject_id,)).fetchall()
+    sections = conn.execute('SELECT * FROM sections WHERE subject_id = ? ORDER BY section_code',
+                            (subject_id,)).fetchall()
+    tasks = conn.execute('SELECT DISTINCT fipi_code, topic_name FROM tasks WHERE subject_id = ?',
+                         (subject_id,)).fetchall()
     conn.close()
     return render_template('topics.html', subject=subject, sections=sections, tasks=tasks, username=session['username'])
 
 
+@app.route('/training')
+@login_required
+def training():
+    subjects = get_db().execute('SELECT * FROM subjects').fetchall()
+    get_db().close()
+    return render_template('training.html', subjects=subjects, username=session['username'])
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('stats.html', username=session['username'])
+
+
+@app.route('/info')
+def info():
+    return render_template('info.html')
+
+
+@app.route('/alisa')
+@login_required
+def alisa_chat():
+    return render_template('alisa.html', username=session['username'])
+
+
+# --- Маршруты: API (RESTful) ---
 @app.route('/api/subjects')
 def api_subjects():
     conn = get_db()
@@ -321,7 +337,8 @@ def api_sections():
     subject_id = request.args.get('subject_id')
     conn = get_db()
     if subject_id:
-        sections = conn.execute('SELECT * FROM sections WHERE subject_id = ? ORDER BY section_code', (subject_id,)).fetchall()
+        sections = conn.execute('SELECT * FROM sections WHERE subject_id = ? ORDER BY section_code',
+                                (subject_id,)).fetchall()
     else:
         sections = conn.execute('SELECT * FROM sections ORDER BY subject_id, section_code').fetchall()
     conn.close()
@@ -337,11 +354,14 @@ def api_tasks():
     params = []
 
     if request.args.get('subject_id'):
-        q += " AND t.subject_id = ?"; params.append(request.args.get('subject_id'))
+        q += " AND t.subject_id = ?";
+        params.append(request.args.get('subject_id'))
     if request.args.get('section_id'):
-        q += " AND t.section_id = ?"; params.append(request.args.get('section_id'))
+        q += " AND t.section_id = ?";
+        params.append(request.args.get('section_id'))
     if request.args.get('fipi_code'):
-        q += " AND t.fipi_code = ?"; params.append(request.args.get('fipi_code'))
+        q += " AND t.fipi_code = ?";
+        params.append(request.args.get('fipi_code'))
 
     q += " ORDER BY t.section_id, t.fipi_code LIMIT ?"
     params.append(request.args.get('limit', 10))
@@ -385,7 +405,9 @@ def submit_answer():
 def finish_test():
     data = request.get_json()
     conn = get_db()
-    stats = conn.execute('SELECT COUNT(*) as total, SUM(is_correct) as correct FROM attempt_answers WHERE attempt_id = ?', (data['attempt_id'],)).fetchone()
+    stats = conn.execute(
+        'SELECT COUNT(*) as total, SUM(is_correct) as correct FROM attempt_answers WHERE attempt_id = ?',
+        (data['attempt_id'],)).fetchone()
     total = stats['total'] or 0
     correct = stats['correct'] or 0
     score = (correct / total * 100) if total > 0 else 0
@@ -402,29 +424,12 @@ def finish_test():
 def profile_stats():
     conn = get_db()
     user_id = conn.execute('SELECT id FROM users WHERE username = ?', (session['username'],)).fetchone()['id']
-    attempts = conn.execute('SELECT s.name, a.score, a.finished_at FROM attempts a JOIN subjects s ON a.subject_id = s.id WHERE a.user_id = ? ORDER BY a.finished_at DESC', (user_id,)).fetchall()
+    attempts = conn.execute(
+        'SELECT s.name, a.score, a.finished_at FROM attempts a JOIN subjects s ON a.subject_id = s.id WHERE a.user_id = ? ORDER BY a.finished_at DESC',
+        (user_id,)).fetchall()
     res = [{'subject': a['name'], 'score': a['score'], 'date': a['finished_at']} for a in attempts]
     conn.close()
     return jsonify({'history': res})
-
-
-@app.route('/training')
-@login_required
-def training():
-    subjects = get_db().execute('SELECT * FROM subjects').fetchall()
-    get_db().close()
-    return render_template('training.html', subjects=subjects, username=session['username'])
-
-
-@app.route('/profile')
-@login_required
-def profile():
-    return render_template('stats.html', username=session['username'])
-
-
-@app.route('/info')
-def info():
-    return render_template('info.html')
 
 
 if __name__ == '__main__':

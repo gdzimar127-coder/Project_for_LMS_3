@@ -3,122 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тренировка с Алисой | Тренажёр ОГЭ</title>
+    <title>Тестирование | Подготовка к ОГЭ</title>
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; }
-        header {
-            background: #2c3e50; color: white; padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-        .title { font-size: 22px; font-weight: 600; }
-        .profile-btn, .logout-btn {
-            background: white; border: 2px solid black; color: black;
-            padding: 8px 18px; cursor: pointer; border-radius: 6px;
-            font-size: 14px; font-weight: 500; transition: 0.2s;
-        }
-        .profile-btn:hover { background: #e9ecef; }
-        .logout-btn { border-color: white; color: white; background: transparent; }
-        .logout-btn:hover { background: rgba(255,255,255,0.15); }
-        .user-info { display: flex; align-items: center; gap: 12px; }
-        .chat-container {
-            max-width: 700px; margin: 30px auto; background: white;
-            border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; height: calc(100vh - 100px);
-        }
-        .chat-header {
-            padding: 15px 20px; border-bottom: 1px solid #eee;
-            display: flex; align-items: center; gap: 12px; background: #f8f9fa;
-            border-radius: 12px 12px 0 0;
-        }
-        .alisa-avatar {
-            width: 40px; height: 40px; background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: 18px;
-        }
-        .alisa-name { font-weight: 600; color: #2c3e50; }
-        .alisa-status { font-size: 12px; color: #27ae60; }
-        .chat-messages {
-            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
-        }
-        .message {
-            max-width: 80%; padding: 12px 16px; border-radius: 18px;
-            font-size: 14px; line-height: 1.4; animation: slideIn 0.2s;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .message.alisa { align-self: flex-start; background: #f1f3f5; color: #2c3e50; border-bottom-left-radius: 4px; }
-        .message.user { align-self: flex-end; background: #2c3e50; color: white; border-bottom-right-radius: 4px; }
-        .choice-buttons {
-            display: flex; flex-wrap: wrap; gap: 10px; padding: 15px 20px;
-            border-top: 1px solid #eee; background: #f8f9fa; border-radius: 0 0 12px 12px;
-        }
-        .choice-btn {
-            padding: 10px 18px; background: white; border: 2px solid #2c3e50;
-            color: #2c3e50; border-radius: 25px; cursor: pointer;
-            font-size: 14px; font-weight: 500; transition: 0.2s;
-        }
-        .choice-btn:hover { background: #2c3e50; color: white; }
-        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .back-btn {
-            display: inline-block; margin: 20px auto; padding: 12px 24px;
-            background: #2c3e50; color: white; text-decoration: none;
-            border-radius: 6px; font-weight: 500; transition: 0.2s; width: fit-content;
-        }
-        .back-btn:hover { background: #34495e; }
-        @media (max-width: 600px) {
-            .chat-container { height: calc(100vh - 80px); margin: 15px; }
-            .message { max-width: 90%; }
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; color: #333; }
+        header { background: #2c3e50; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 900px; margin: 20px auto; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 5px; transition: 0.2s; }
+        .btn-primary { background: #2c3e50; color: white; }
+        .btn-primary:hover { background: #34495e; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+
+        select, input { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        label { font-weight: 600; color: #2c3e50; display: block; margin-top: 10px; }
+
+        .option { display: block; width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 5px; background: #fff; cursor: pointer; text-align: left; }
+        .option:hover { background: #f0f0f0; border-color: #bbb; }
+        .option.selected { border-color: #2c3e50; background: #e8f4fd; }
+        .option.correct { border-color: #27ae60; background: #d4edda; }
+        .option.incorrect { border-color: #e74c3c; background: #f8d7da; }
+
+        .hidden { display: none; }
+        .timer { font-size: 24px; font-weight: bold; color: #e67e22; text-align: right; margin-bottom: 10px; }
+        .meta { font-size: 12px; color: #777; margin-bottom: 10px; }
+        .solution-box { margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; display: none; }
+
+        .section-group { margin-bottom: 15px; }
+        .section-title { font-weight: bold; color: #2c3e50; margin: 10px 0 5px; font-size: 14px; }
+        .topic-list { margin-left: 15px; }
+        .topic-item { margin: 3px 0; }
+        .topic-item input { width: auto; margin: 0 8px 0 0; }
+        .topic-item label { display: inline; font-weight: normal; font-size: 13px; color: #555; }
     </style>
 </head>
 <body>
     <header>
-        <div class="title">Тренажёр ОГЭ</div>
-        {% if username %}
-            <div class="user-info">
-                <span>👤 {{ username }}</span>
-                <a href="{{ url_for('logout') }}"><button class="logout-btn">Выйти</button></a>
-            </div>
-        {% else %}
-            <button class="profile-btn" onclick="window.location.href='/'">Профиль</button>
-        {% endif %}
+        <div style="font-size: 20px; font-weight: bold;">📝 Подготовка к ОГЭ</div>
+        <div>
+            <span id="usernameDisplay"></span>
+            <a href="/logout" style="color: white; margin-left: 15px; text-decoration: none;">Выйти</a>
+        </div>
     </header>
-    <main class="chat-container">
-        <div class="chat-header">
-            <div class="alisa-avatar">А</div>
-            <div>
-                <div class="alisa-name">Алиса</div>
-                <div class="alisa-status">● онлайн</div>
+
+    <div class="container">
+        <!-- ЭКРАН НАСТРОЕК -->
+        <div id="setupScreen" class="card">
+            <h2>Настройки тестирования</h2>
+
+            <label>Предмет:</label>
+            <select id="subjectSelect" onchange="loadSections()">
+                <option value="">-- Выберите предмет --</option>
+                {% for s in subjects %}
+                <option value="{{ s.id }}">{{ s.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Раздел КЭС:</label>
+            <select id="sectionSelect" onchange="loadTopics()">
+                <option value="">Все разделы</option>
+            </select>
+
+            <label>Тема КЭС:</label>
+            <div id="topicsContainer" class="section-group">
+                <div style="color: #777; font-style: italic; padding: 10px;">Сначала выберите предмет</div>
             </div>
+
+            <label>Количество вопросов:</label>
+            <select id="countSelect">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+            </select>
+
+            <button class="btn btn-primary" onclick="startTest()" style="width: 100%; margin-top: 15px;">Начать тест</button>
         </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="message alisa">Привет! Я Алиса — ваш помощник для подготовки к экзаменам. 🎓</div>
-            <div class="message alisa">Что вы сдаете: ОГЭ или ЕГЭ?</div>
+
+        <!-- ЭКРАН ТЕСТА -->
+        <div id="testScreen" class="hidden">
+            <div class="timer" id="timer">00:00</div>
+            <div class="card">
+                <div class="meta">
+                    <span id="subjectName"></span> |
+                    Раздел: <span id="sectionName"></span> |
+                    Тема: <span id="topicName"></span>
+                </div>
+                <h3 id="questionText">Загрузка...</h3>
+                <div id="optionsContainer"></div>
+
+                <input type="text" id="freeInput" class="hidden" placeholder="Введите ваш ответ...">
+
+                <div class="solution-box" id="solutionBox">
+                    <strong>Пояснение:</strong> <span id="solutionText"></span>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+                    <button class="btn btn-secondary" onclick="prevQuestion()">← Назад</button>
+                    <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">Ответить</button>
+                    <button class="btn btn-secondary" onclick="nextQuestion()">Вперед →</button>
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="finishTest()" style="width: 100%;">Завершить тест досрочно</button>
         </div>
-        <div class="choice-buttons" id="choiceButtons">
-            <button class="choice-btn" onclick="selectOption('ОГЭ')">ОГЭ</button>
-            <button class="choice-btn" onclick="selectOption('ЕГЭ')">ЕГЭ</button>
+
+        <!-- ЭКРАН РЕЗУЛЬТАТОВ -->
+        <div id="resultScreen" class="card hidden" style="text-align: center;">
+            <h2>Результаты</h2>
+            <div style="font-size: 48px; font-weight: bold; color: #2c3e50;" id="scoreDisplay">0%</div>
+            <p>Правильных ответов: <span id="correctCount">0</span> из <span id="totalCount">0</span></p>
+            <button class="btn btn-primary" onclick="location.reload()">Новый тест</button>
+            <a href="/profile" class="btn btn-secondary">Моя статистика</a>
         </div>
-    </main>
-    <a href="/" class="back-btn">← Вернуться на главную</a>
+    </div>
+
     <script>
-        const chatMessages = document.getElementById('chatMessages');
-        const choiceButtons = document.getElementById('choiceButtons');
-        function selectOption(text) {
-            const msg = document.createElement('div');
-            msg.className = 'message user';
-            msg.textContent = text;
-            chatMessages.appendChild(msg);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
-            setTimeout(() => {
-                const reply = document.createElement('div');
-                reply.className = 'message alisa';
-                reply.textContent = `Отлично, ${text}! Выбор предмета скоро будет доступен.`;
-                chatMessages.appendChild(reply);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 600);
+        // Актуальные названия тем по ФИПИ для каждого предмета
+        const topicNamesBySubject = {
+            '1': { // МАТЕМАТИКА
+                '1.1': 'Натуральные и целые числа',
+                '1.2': 'Обыкновенные и десятичные дроби, проценты',
+                '2.1': 'Буквенные выражения',
+                '2.2': 'Степень с целым показателем',
+                '3.1': 'Линейные уравнения',
+                '3.2': 'Квадратные уравнения',
+                '7.1': 'Геометрические фигуры',
+                '7.2': 'Площади фигур'
+            },
+            '2': { // РУССКИЙ ЯЗЫК
+                '1.1': 'Фонетика. Орфоэпия',
+                '2.1': 'Лексическое значение слова',
+                '3.1': 'Морфемика',
+                '4.1': 'Орфография',
+                '5.1': 'Части речи',
+                '6.1': 'Синтаксис',
+                '6.2': 'Пунктуация'
+            },
+            '3': { // ИНФОРМАТИКА
+                '1.1': 'Системы счисления',
+                '1.2': 'Двоичная система',
+                '2.1': 'Алгоритмизация',
+                '4.1': 'Файловая система',
+                '5.1': 'Базы данных'
+            },
+            '4': { // ОБЩЕСТВОЗНАНИЕ
+                '1.1': 'Человек и общество',
+                '3.1': 'Экономика',
+                '5.1': 'Политика',
+                '6.1': 'Право'
+            },
+            '5': { // ФИЗИКА
+                '1.1': 'Механическое движение',
+                '2.1': 'Тепловые явления',
+                '3.1': 'Электрические явления',
+                '4.1': 'Квантовые явления'
+            },
+            '10': { // ЛИТЕРАТУРА - ПОЛНЫЙ СПИСОК
+                '1': '«Слово о полку Игореве»',
+                '2': 'М.В. Ломоносов',
+                '3': 'Д.И. Фонвизин',
+                '4': 'Г.Р. Державин',
+                '5': 'Н.М. Карамзин',
+                '6': 'И.А. Крылов',
+                '7': 'В.А. Жуковский',
+                '8': 'А.С. Грибоедов',
+                '9': 'А.С. Пушкин. Стихотворения',
+                '10': 'А.С. Пушкин. «Евгений Онегин»',
+                '11': 'А.С. Пушкин. «Повести Белкина»',
+                '12': 'А.С. Пушкин. «Медный всадник»',
+                '13': 'А.С. Пушкин. «Капитанская дочка»',
+                '14': 'М.Ю. Лермонтов. Стихотворения',
+                '15': 'М.Ю. Лермонтов. «Песня про купца Калашникова»',
+                '16': 'М.Ю. Лермонтов. «Мцыри»',
+                '17': 'М.Ю. Лермонтов. «Герой нашего времени»',
+                '18': 'Н.В. Гоголь. «Ревизор»',
+                '19': 'Н.В. Гоголь. «Шинель»',
+                '20': 'Н.В. Гоголь. «Мёртвые души»',
+                '21': 'Поэзия пушкинской эпохи',
+                '22': 'И.С. Тургенев',
+                '23': 'Н.С. Лесков',
+                '24': 'Ф.И. Тютчев',
+                '25': 'А.А. Фет',
+                '26': 'Н.А. Некрасов',
+                '27': 'М.Е. Салтыков-Щедрин',
+                '28': 'Ф.М. Достоевский',
+                '29': 'Л.Н. Толстой',
+                '30': 'А.П. Чехов',
+                '31': 'A.К. Толстой',
+                '32': 'И.А. Бунин',
+                '33': 'А.А. Блок',
+                '34': 'В.В. Маяковский',
+                '35': 'С.А. Есенин',
+                '36': 'Н.С. Гумилёв',
+                '37': 'М.И. Цветаева',
+                '38': 'О.Э. Мандельштам',
+                '39': 'Б.Л. Пастернак',
+                '40': 'А.И. Куприн',
+                '41': 'М.А. Шолохов',
+                '42': 'А.Т. Твардовский',
+                '43': 'В.М. Шукшин',
+                '44': 'А.И. Солженицын',
+                '45': 'Проза XX–XXI вв.',
+                '46': 'Лирика XX–XXI вв.',
+                '47': 'Зарубежная литература'
+            }
+        };
+
+        let currentTasks = [];
+        let currentIndex = 0;
+        let answers = {};
+        let attemptId = null;
+        let timerInterval;
+        let startTime;
+        let allSections = [];
+
+        document.getElementById('usernameDisplay').innerText = "{{ username }}";
+
+        async function loadSections() {
+            const subjectId = document.getElementById('subjectSelect').value;
+            const sectionSelect = document.getElementById('sectionSelect');
+            sectionSelect.innerHTML = '<option value="">Все разделы</option>';
+
+            if (!subjectId) {
+                document.getElementById('topicsContainer').innerHTML = '<div style="color: #777; font-style: italic; padding: 10px;">Сначала выберите предмет</div>';
+                return;
+            }
+
+            // Загружаем разделы
+            const res = await fetch(`/api/sections?subject_id=${subjectId}`);
+            allSections = await res.json();
+
+            allSections.forEach(sec => {
+                const opt = document.createElement('option');
+                opt.value = sec.id;
+                opt.innerText = `${sec.section_code}. ${sec.name}`;
+                sectionSelect.appendChild(opt);
+            });
+
+            loadTopics();
+        }
+
+        async function loadTopics() {
+            const subjectId = document.getElementById('subjectSelect').value;
+            const sectionId = document.getElementById('sectionSelect').value;
+            const container = document.getElementById('topicsContainer');
+
+            if (!subjectId) return;
+
+            // Загружаем задания для получения доступных тем
+            let url = `/api/tasks?subject_id=${subjectId}&limit=200`;
+            if (sectionId) url += `&section_id=${sectionId}`;
+
+            const res = await fetch(url);
+            const tasks = await res.json();
+
+            // Группируем по кодам ФИПИ
+            const topicsMap = {};
+            tasks.forEach(task => {
+                if (task.fipi_code && !topicsMap[task.fipi_code]) {
+                    const topicName = topicNamesBySubject[subjectId]?.[task.fipi_code] ||
+                                     task.topic_name ||
+                                     `Тема ${task.fipi_code}`;
+                    topicsMap[task.fipi_code] = {
+                        code: task.fipi_code,
+                        name: topicName,
+                        count: 0
+                    };
+                }
+                if (task.fipi_code) topicsMap[task.fipi_code].count++;
+            });
+
+            // Сортируем и отображаем
+            const topics = Object.values(topicsMap).sort((a, b) => {
+                // Сортируем как числа, если возможно
+                const aNum = parseFloat(a.code);
+                const bNum = parseFloat(b.code);
+                return aNum - bNum;
+            });
+
+            if (topics.length === 0) {
+                container.innerHTML = '<div style="color: #777; font-style: italic; padding: 10px;">Нет заданий</div>';
+                return;
+            }
+
+            let html = '<div class="topic-list">';
+            topics.forEach(topic => {
+                html += `
+                    <div class="topic-item">
+                        <input type="checkbox" id="topic_${topic.code}" value="${topic.code}" onchange="updateSelectedTopics()">
+                        <label for="topic_${topic.code}">${topic.code} ${topic.name} (${topic.count} зад.)</label>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function updateSelectedTopics() {
+            // Можно добавить логику выбора нескольких тем
+        }
+
+        async function startTest() {
+            const subjectId = document.getElementById('subjectSelect').value;
+            if (!subjectId) return alert('Выберите предмет!');
+
+            const sectionId = document.getElementById('sectionSelect').value;
+            const limit = document.getElementById('countSelect').value;
+
+            // Собираем выбранные темы
+            const selectedTopics = Array.from(document.querySelectorAll('#topicsContainer input[type="checkbox"]:checked'))
+                                        .map(cb => cb.value);
+
+            let url = `/api/tasks?subject_id=${subjectId}&limit=${limit}`;
+            if (sectionId) url += `&section_id=${sectionId}`;
+
+            // Начинаем попытку в БД
+            const startRes = await fetch('/api/start_test', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ subject_id: subjectId })
+            });
+            const startData = await startRes.json();
+            attemptId = startData.attempt_id;
+
+            // Получаем вопросы
+            const res = await fetch(url);
+            let tasks = await res.json();
+
+            // Фильтруем по выбранным темам если нужно
+            if (selectedTopics.length > 0) {
+                tasks = tasks.filter(t => selectedTopics.includes(t.fipi_code));
+            }
+
+            if (tasks.length === 0) return alert('Нет заданий по этим критериям');
+
+            currentTasks = tasks;
+
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('testScreen').classList.remove('hidden');
+
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            renderQuestion();
+        }
+
+        function updateTimer() {
+            const diff = Math.floor((Date.now() - startTime) / 1000);
+            const m = Math.floor(diff / 60).toString().padStart(2, '0');
+            const s = (diff % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${m}:${s}`;
+        }
+
+        function renderQuestion() {
+            const task = currentTasks[currentIndex];
+            document.getElementById('subjectName').innerText = task.subject_name;
+            document.getElementById('sectionName').innerText = task.section_name || '—';
+
+            const topicName = topicNamesBySubject[task.subject_id]?.[task.fipi_code] ||
+                             task.topic_name ||
+                             task.fipi_code || '—';
+            document.getElementById('topicName').innerText = topicName;
+
+            document.getElementById('questionText').innerText = task.question_text;
+            document.getElementById('solutionBox').style.display = 'none';
+            document.getElementById('freeInput').value = '';
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            if (task.options_json) {
+                const opts = JSON.parse(task.options_json);
+                opts.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerText = opt;
+                    btn.onclick = () => selectOption(btn, opt);
+                    if (answers[task.id] && answers[task.id].answer === opt) {
+                        btn.classList.add('selected');
+                    }
+                    container.appendChild(btn);
+                });
+                document.getElementById('freeInput').classList.add('hidden');
+            } else {
+                container.innerHTML = '<p style="color:#777">Введите ответ текстом:</p>';
+                document.getElementById('freeInput').classList.remove('hidden');
+            }
+        }
+
+        function selectOption(btn, val) {
+            document.querySelectorAll('.option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            answers[currentTasks[currentIndex].id] = { answer: val };
+        }
+
+        async function submitAnswer() {
+            const task = currentTasks[currentIndex];
+            if (!answers[task.id]) {
+                const txt = document.getElementById('freeInput').value.trim();
+                if (!txt) return alert('Введите ответ!');
+                answers[task.id] = { answer: txt };
+            }
+
+            await fetch('/api/submit_answer', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    attempt_id: attemptId,
+                    task_id: task.id,
+                    answer: answers[task.id].answer
+                })
+            });
+
+            const correct = task.correct_answer.trim().toLowerCase();
+            const user = answers[task.id].answer.toString().trim().toLowerCase();
+            const isCorrect = correct === user;
+
+            if (task.options_json) {
+                document.querySelectorAll('.option').forEach(btn => {
+                    if (btn.innerText.toLowerCase() === correct) btn.classList.add('correct');
+                    if (btn.classList.contains('selected') && !isCorrect) btn.classList.add('incorrect');
+                });
+            } else {
+                const input = document.getElementById('freeInput');
+                input.style.borderColor = isCorrect ? '#27ae60' : '#e74c3c';
+                input.style.backgroundColor = isCorrect ? '#d4edda' : '#f8d7da';
+            }
+
+            document.getElementById('solutionText').innerText = task.solution_text;
+            document.getElementById('solutionBox').style.display = 'block';
+            document.getElementById('submitBtn').style.display = 'none';
+        }
+
+        function nextQuestion() {
+            if (currentIndex < currentTasks.length - 1) {
+                currentIndex++;
+                document.getElementById('submitBtn').style.display = 'inline-block';
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                document.getElementById('submitBtn').style.display = 'inline-block';
+                renderQuestion();
+            }
+        }
+
+        async function finishTest() {
+            clearInterval(timerInterval);
+            const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
+            const res = await fetch('/api/finish_test', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ attempt_id: attemptId, time_spent: timeSpent })
+            });
+            const result = await res.json();
+
+            document.getElementById('testScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            document.getElementById('scoreDisplay').innerText = result.percentage;
+            document.getElementById('correctCount').innerText = result.correct;
+            document.getElementById('totalCount').innerText = result.total;
         }
     </script>
 </body>

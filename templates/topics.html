@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject.name }} | Подготовка к ОГЭ</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; }
+        header { background: #2c3e50; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .title { font-size: 20px; font-weight: 600; }
+        .back-link { color: white; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+
+        .subject-header {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .subject-header h1 { color: #2c3e50; margin-bottom: 10px; }
+
+        /* РАЗДЕЛЫ КЭС */
+        .sections-container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-item {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #e8f4f8;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .section-header:hover { background: #d4e9ee; }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-toggle {
+            font-size: 20px;
+            color: #666;
+            transition: transform 0.3s;
+        }
+        .section-item.open .section-toggle {
+            transform: rotate(180deg);
+        }
+
+        /* ТЕМЫ КЭС */
+        .topics-list {
+            display: none;
+            padding: 15px 20px;
+            background: #fafbfc;
+        }
+        .section-item.open .topics-list {
+            display: block;
+        }
+
+        .topic-item {
+            margin: 8px 0;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #eee;
+            transition: all 0.2s;
+        }
+        .topic-item:hover {
+            background: #f0f4f8;
+            border-color: #ddd;
+        }
+
+        .topic-item input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .topic-item label {
+            cursor: pointer;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .topic-code {
+            color: #666;
+            font-weight: 600;
+            margin-right: 8px;
+            font-family: monospace;
+        }
+
+        /* КОНТРОЛЫ */
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            position: sticky;
+            bottom: 20px;
+        }
+
+        .selected-info {
+            margin: 15px 0;
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 5px;
+            color: #155724;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 5px;
+        }
+        .btn:hover { background: #34495e; }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+
+        .select-all-section {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .select-all-section label {
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .select-all-section input {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title">📝 {{ subject.name }}</div>
+        <a href="/subjects" class="back-link">← Все предметы</a>
+    </header>
+
+    <div class="container">
+        <div class="subject-header">
+            <h1>{{ subject.name }}</h1>
+            <p style="color: #666;">Выберите разделы и темы для тестирования</p>
+        </div>
+
+        <form id="topicsForm">
+            <div class="sections-container">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Разделы КЭС</h2>
+
+                {% for section in sections %}
+                <div class="section-item" id="section_block_{{ section.id }}">
+                    <div class="section-header" onclick="toggleSection({{ section.id }})">
+                        <div class="section-title">
+                            <span>{{ section.section_code }}</span>
+                            <span>{{ section.name }}</span>
+                        </div>
+                        <span class="section-toggle">▼</span>
+                    </div>
+
+                    <div class="topics-list" id="topics_{{ section.id }}">
+                        <div class="select-all-section">
+                            <label>
+                                <input type="checkbox" onchange="toggleAllTopics({{ section.id }}, this.checked)">
+                                Выбрать все темы раздела
+                            </label>
+                        </div>
+
+                        {% for task in tasks if task.fipi_code and task.fipi_code.startswith(section.section_code + '.') %}
+                        <div class="topic-item">
+                            <input type="checkbox"
+                                   id="topic_{{ task.fipi_code }}"
+                                   name="topics"
+                                   value="{{ task.fipi_code }}"
+                                   class="topic-checkbox"
+                                   data-section="{{ section.id }}"
+                                   onchange="updateCount()">
+                            <label for="topic_{{ task.fipi_code }}">
+                                <span class="topic-code">{{ task.fipi_code }}</span>
+                                {{ task.topic_name or 'Тема ' + task.fipi_code }}
+                            </label>
+                        </div>
+                        {% else %}
+                        <div style="color: #999; padding: 10px; font-style: italic;">
+                            По этому разделу пока нет заданий
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="controls">
+                <div class="selected-info">
+                    ✅ Выбрано тем: <strong id="countSelected">0</strong>
+                </div>
+
+                <button type="button" class="btn" onclick="startTest()" id="startBtn" disabled>
+                    🚀 Начать тестирование
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="selectAll()">
+                    Выбрать все
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="deselectAll()">
+                    Снять выделение
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Открытие/закрытие раздела
+        function toggleSection(sectionId) {
+            const sectionBlock = document.getElementById('section_block_' + sectionId);
+            sectionBlock.classList.toggle('open');
+        }
+
+        // Выбор всех тем в разделе
+        function toggleAllTopics(sectionId, checked) {
+            const checkboxes = document.querySelectorAll('.topic-checkbox[data-section="' + sectionId + '"]');
+            checkboxes.forEach(cb => {
+                cb.checked = checked;
+            });
+            updateCount();
+        }
+
+        // Выбрать все темы
+        function selectAll() {
+            document.querySelectorAll('.topic-checkbox').forEach(cb => cb.checked = true);
+            document.querySelectorAll('.select-all-section input').forEach(cb => cb.checked = true);
+            document.querySelectorAll('.section-item').forEach(section => section.classList.add('open'));
+            updateCount();
+        }
+
+        // Снять выделение
+        function deselectAll() {
+            document.querySelectorAll('.topic-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.select-all-section input').forEach(cb => cb.checked = false);
+            updateCount();
+        }
+
+        // Обновление счетчика
+        function updateCount() {
+            const selected = document.querySelectorAll('.topic-checkbox:checked').length;
+            document.getElementById('countSelected').textContent = selected;
+            document.getElementById('startBtn').disabled = selected === 0;
+        }
+
+        // Начало тестирования
+        function startTest() {
+            const selectedTopics = Array.from(document.querySelectorAll('.topic-checkbox:checked'))
+                                        .map(cb => cb.value);
+
+            if (selectedTopics.length === 0) {
+                alert('Выберите хотя бы одну тему!');
+                return;
+            }
+
+            const subjectId = {{ subject.id }};
+            const topicsParam = selectedTopics.join(',');
+            window.location.href = `/training?subject=${subjectId}&topics=${topicsParam}`;
+        }
+
+        // Автоматически открываем первый раздел при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstSection = document.querySelector('.section-item');
+            if (firstSection) {
+                firstSection.classList.add('open');
+            }
+        });
+    </script>
+</body>
+</html>

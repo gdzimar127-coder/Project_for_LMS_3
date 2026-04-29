@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор предмета | Подготовка к ОГЭ</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; }
+        header { background: #2c3e50; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .title { font-size: 22px; font-weight: 600; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-link { color: white; text-decoration: none; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        h1 { color: #2c3e50; margin-bottom: 30px; text-align: center; font-size: 28px; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-top: 20px; }
+        .subject-card { background: linear-gradient(135deg, #66a3a3 0%, #4d8080 100%); color: white; padding: 30px 20px; border-radius: 10px; cursor: pointer; transition: all 0.3s; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .subject-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .subject-icon { font-size: 48px; margin-bottom: 15px; }
+        .subject-name { font-size: 18px; font-weight: 600; text-align: center; }
+        .back-link { display: inline-block; margin-top: 30px; color: #2c3e50; text-decoration: none; font-weight: 500; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title">📚 Открытый банк заданий ОГЭ</div>
+        {% if username %}
+        <div class="user-info">
+            <span>👤 {{ username }}</span>
+            <a href="/logout" class="logout-link">Выйти</a>
+        </div>
+        {% else %}
+        <a href="/" class="logout-link">Войти</a>
+        {% endif %}
+    </header>
+
+    <div class="container">
+        <h1>Выберите предмет для подготовки</h1>
+        <div class="subjects-grid">
+            {% for subject in subjects %}
+            <a href="/topics/{{ subject.id }}" class="subject-card">
+                <div class="subject-icon">
+                    {% if subject.id == 1 %}📐
+                    {% elif subject.id == 2 %}📚
+                    {% elif subject.id == 3 %}💻
+                    {% elif subject.id == 4 %}👥
+                    {% elif subject.id == 5 %}⚛️
+                    {% elif subject.id == 6 %}🧬
+                    {% elif subject.id == 7 %}🌍
+                    {% elif subject.id == 8 %}⚗️
+                    {% elif subject.id == 9 %}🏛️
+                    {% elif subject.id == 10 %}✍️
+                    {% elif subject.id == 11 %}🇬
+                    {% elif subject.id == 12 %}🇩🇪
+                    {% elif subject.id == 13 %}🇫🇷
+                    {% elif subject.id == 14 %}🇪
+                    {% endif %}
+                </div>
+                <div class="subject-name">{{ subject.name }}</div>
+            </a>
+            {% endfor %}
+        </div>
+        <a href="/" class="back-link">← На главную</a>
+    </div>
+</body>
+</html>

@@ -5,106 +5,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тестирование | Тренажёр ОГЭ</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
+        :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; --muted: #64748b; --border: #e2e8f0; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .timer { font-size: 1.5rem; font-weight: bold; color: #ef4444; text-align: right; }
-        .question { font-size: 1.2rem; margin-bottom: 15px; }
-        .options label { display: block; padding: 10px; margin: 5px 0; background: #f8fafc; border-radius: 6px; cursor: pointer; }
+        .question { font-size: 1.15rem; margin-bottom: 15px; line-height: 1.5; }
+        .options label { display: block; padding: 12px; margin: 6px 0; background: #f8fafc; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
+        .options label:hover { background: #f1f5f9; border-color: var(--primary); }
         .options input { margin-right: 10px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-right: 10px; }
-        .btn-primary { background: #2563eb; color: white; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px; font-weight: 500; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
         .btn-secondary { background: #64748b; color: white; }
         .btn-danger { background: #ef4444; color: white; }
-        #question-area, #result-area { display: none; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 999; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none; }
+        .meta-tag { display: inline-block; background: #dbeafe; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 10px; }
+        .exp-box { display: none; margin-top: 15px; padding: 12px; background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 6px; line-height: 1.4; }
     </style>
 </head>
 <body>
+    <!-- Экран загрузки нейросети -->
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+        <h3 style="margin: 0 0 8px;">⏳ Генерация заданий...</h3>
+        <p style="color: var(--muted); margin: 0;">Нейросеть создаёт уникальные примеры по выбранной теме. Подождите 5-10 секунд.</p>
+    </div>
+
     <div class="container">
-        <div class="card">
+        <div class="card" id="settings-area">
             <h2>📝 Настройки тестирования</h2>
-            <div id="settings-area">
-                <label>Предмет:
-                    <select id="subject-select">
-                        {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
-                    </select>
-                </label>
-                <label>Количество вопросов:
-                    <select id="count-select"><option value="5">5</option><option value="10">10</option><option value="20">20</option></select>
-                </label>
-                <br><br>
-                <button class="btn btn-primary" onclick="startTest()">Начать тест</button>
-                <a href="/subjects" class="btn btn-secondary">← Назад</a>
-            </div>
+            <label style="display:block; margin-bottom:12px;">Предмет:
+                <select id="subject-select" style="width:100%; padding:8px; margin-top:4px; border:1px solid var(--border); border-radius:6px;">
+                    {% for s in subjects %}<option value="{{ s.name }}">{{ s.name }}</option>{% endfor %}
+                </select>
+            </label>
+            <label style="display:block; margin-bottom:12px;">Тема:
+                <input type="text" id="topic-input" placeholder="Например: Уравнения" style="width:100%; padding:8px; margin-top:4px; border:1px solid var(--border); border-radius:6px; box-sizing: border-box;">
+            </label>
+            <label style="display:block; margin-bottom:16px;">Количество вопросов:
+                <select id="count-select" style="width:100%; padding:8px; margin-top:4px; border:1px solid var(--border); border-radius:6px;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                </select>
+            </label>
+            <button class="btn btn-primary" onclick="startTest()">Начать тест</button>
+            <a href="/subjects" class="btn btn-secondary">← Назад</a>
         </div>
 
-        <div class="card" id="question-area">
+        <div class="card hidden" id="quiz-area">
             <div class="timer" id="timer">00:00</div>
-            <div id="progress" style="color:#64748b; margin-bottom:10px;"></div>
-            <div id="question-container"></div>
+            <div id="progress" style="color: var(--muted); margin-bottom: 15px; font-size: 0.9rem;"></div>
+            <div class="meta-tag" id="meta-tag">Тема: -</div>
+            <div id="question-container" class="question"></div>
             <div class="options" id="options-container"></div>
-            <div style="margin-top:20px;">
+            <div class="exp-box" id="explanation-box"></div>
+            <div style="margin-top:20px; display:flex; gap:10px;">
                 <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Далее →</button>
-                <button class="btn btn-danger" onclick="finishTest()">Завершить досрочно</button>
+                <button class="btn btn-danger" onclick="finishTest()">Завершить тест</button>
             </div>
         </div>
 
-        <div class="card" id="result-area" style="text-align:center;">
+        <div class="card hidden" id="result-area" style="text-align:center;">
             <h2>🎉 Результаты</h2>
-            <div id="score-display" style="font-size:2rem; font-weight:bold; margin:10px 0;">0%</div>
-            <p id="result-text"></p>
+            <div id="score-display" style="font-size:3rem; font-weight:bold; color:var(--primary); margin:10px 0;">0%</div>
+            <p id="result-text" style="color: var(--muted);"></p>
             <button class="btn btn-primary" onclick="location.reload()">Новый тест</button>
             <a href="/profile" class="btn btn-secondary">Моя статистика</a>
         </div>
     </div>
+
     <script>
-        let attemptId = null, questions = [], current = 0, correct = 0, time = 0, timerInterval;
+        // Автозаполнение полей из URL параметров
+        const urlParams = new URLSearchParams(window.location.search);
+        const subjectParam = urlParams.get('subject');
+        const topicParam = urlParams.get('topic');
+        if(subjectParam) document.getElementById('subject-select').value = subjectParam;
+        if(topicParam) document.getElementById('topic-input').value = decodeURIComponent(topicParam);
+
+        let questions = [], current = 0, correct = 0, time = 0, timerInterval;
+
         function startTest() {
-            const sub = document.getElementById('subject-select').value;
+            const subject = document.getElementById('subject-select').value;
+            const topic = document.getElementById('topic-input').value || 'Общие темы';
             const count = document.getElementById('count-select').value;
-            fetch('/api/start_test', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({subject_id:sub})})
-            .then(r=>r.json()).then(d => {
-                attemptId = d.attempt_id;
-                fetch(`/api/tasks?subject_id=${sub}&limit=${count}`).then(r=>r.json()).then(data => {
-                    questions = data;
-                    document.getElementById('settings-area').style.display='none';
-                    document.getElementById('question-area').style.display='block';
-                    startTimer();
-                    showQuestion();
-                });
+            const loader = document.getElementById('loader');
+            loader.style.display = 'flex';
+
+            fetch('/generate_question', { // Убедитесь, что маршрут в generating.py совпадает
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({subject, topic, count})
+            })
+            .then(r => r.json())
+            .then(data => {
+                loader.style.display = 'none';
+                if(data.error) throw new Error(data.error);
+                questions = data;
+                current = 0; correct = 0; time = 0;
+                document.getElementById('settings-area').classList.add('hidden');
+                document.getElementById('quiz-area').classList.remove('hidden');
+                document.getElementById('meta-tag').textContent = `Предмет: ${subject} | Тема: ${topic}`;
+                startTimer();
+                showQuestion();
+            })
+            .catch(err => {
+                loader.style.display = 'none';
+                alert('Ошибка генерации: ' + err.message);
             });
         }
-        function startTimer() { timerInterval = setInterval(()=>{ time++; let m=Math.floor(time/60).toString().padStart(2,'0'), s=(time%60).toString().padStart(2,'0'); document.getElementById('timer').textContent=`${m}:${s}`; }, 1000); }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                time++;
+                const m = Math.floor(time/60).toString().padStart(2, '0');
+                const s = (time%60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${m}:${s}`;
+            }, 1000);
+        }
+
         function showQuestion() {
             if(current >= questions.length) return finishTest();
-            let q = questions[current];
+            const q = questions[current];
             document.getElementById('progress').textContent = `Вопрос ${current+1} из ${questions.length}`;
-            document.getElementById('question-container').innerHTML = `<div class="question">${q.question_text}</div>`;
-            let opts = document.getElementById('options-container');
+            document.getElementById('question-container').innerHTML = `<strong>${q.question}</strong>`;
+            document.getElementById('explanation-box').style.display = 'none';
+            const opts = document.getElementById('options-container');
             opts.innerHTML = '';
-            JSON.parse(q.options_json).forEach(opt => {
+            q.options.forEach(opt => {
                 opts.innerHTML += `<label><input type="radio" name="opt" value="${opt}"> ${opt}</label>`;
             });
         }
+
         function nextQuestion() {
-            let sel = document.querySelector('input[name="opt"]:checked');
-            if(!sel) return alert('Выберите ответ!');
-            fetch('/api/submit_answer', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({attempt_id:attemptId, task_id:questions[current].id, answer:sel.value})})
-            .then(r=>r.json()).then(d => {
-                if(d.correct) correct++;
+            const sel = document.querySelector('input[name="opt"]:checked');
+            if(!sel) return alert('Выберите вариант ответа!');
+
+            const q = questions[current];
+            const isCorrect = sel.value === q.correct_answer;
+            if(isCorrect) correct++;
+
+            const expBox = document.getElementById('explanation-box');
+            expBox.style.display = 'block';
+            expBox.innerHTML = `<strong>${isCorrect ? '✅ Верно!' : '❌ Неверно.'}</strong><br>Правильный ответ: ${q.correct_answer}<br><em>Пояснение: ${q.explanation}</em>`;
+
+            setTimeout(() => {
                 current++;
                 showQuestion();
-            });
+            }, 2000); // 2 сек на прочтение пояснения
         }
+
         function finishTest() {
             clearInterval(timerInterval);
-            fetch('/api/finish_test', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({attempt_id:attemptId, time_spent:time})})
-            .then(r=>r.json()).then(d => {
-                document.getElementById('question-area').style.display='none';
-                document.getElementById('result-area').style.display='block';
-                document.getElementById('score-display').textContent = d.percentage;
-                document.getElementById('result-text').textContent = `Правильных ответов: ${d.correct} из ${d.total}`;
-            });
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('result-area').classList.remove('hidden');
+            const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+            document.getElementById('score-display').textContent = score + '%';
+            document.getElementById('result-text').textContent = `Правильных ответов: ${correct} из ${questions.length}`;
         }
     </script>
 </body>

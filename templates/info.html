@@ -2,8 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Справка ГИА | Тренажёр ОГЭ</title>
+    <title>Справка ГИА</title>
     <style>
         body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -11,52 +10,32 @@
         th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
         th { background: #f8fafc; }
         a { color: #2563eb; }
-        .back { margin-top: 20px; display: inline-block; }
     </style>
 </head>
 <body>
     <div class="container">
         <header style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:15px; margin-bottom:20px;">
             <h1>📋 Справка ГИА</h1>
-            {% if username %}
-                <div>👤 {{ username }} <a href="{{ url_for('logout') }}" style="color:#ef4444; margin-left:10px;">Выйти</a></div>
-            {% else %}
-                <a href="/">Профиль</a>
-            {% endif %}
+            {% if username %}<div>👤 {{ username }} <a href="/logout" style="color:#ef4444; margin-left:10px;">Выйти</a></div>{% else %}<a href="/">Профиль</a>{% endif %}
         </header>
-        <h2>📊 Минимальные баллы для получения аттестата</h2>
+        <h2>📊 Минимальные баллы</h2>
         <table>
             <tr><th>Предмет</th><th>Минимальный балл</th></tr>
-            <tr><td>Русский язык</td><td>15</td></tr>
-            <tr><td>Математика</td><td>8</td></tr>
-            <tr><td>Обществознание</td><td>20</td></tr>
-            <tr><td>Информатика и ИКТ</td><td>10</td></tr>
-            <tr><td>История</td><td>12</td></tr>
-            <tr><td>Физика</td><td>10</td></tr>
-            <tr><td>Химия</td><td>12</td></tr>
-            <tr><td>Биология</td><td>16</td></tr>
-            <tr><td>Иностранные языки</td><td>48</td></tr>
-            <tr><td>Литература</td><td>15</td></tr>
+            <tr><td>Русский язык</td><td>15</td></tr><tr><td>Математика</td><td>8</td></tr>
+            <tr><td>Обществознание</td><td>20</td></tr><tr><td>Информатика и ИКТ</td><td>10</td></tr>
+            <tr><td>История</td><td>12</td></tr><tr><td>Физика</td><td>10</td></tr>
+            <tr><td>Химия</td><td>12</td></tr><tr><td>Биология</td><td>16</td></tr>
+            <tr><td>Иностранные языки</td><td>48</td></tr><tr><td>Литература</td><td>15</td></tr>
             <tr><td>География</td><td>17</td></tr>
         </table>
-        <p style="color:#64748b; font-size:0.9rem;">* Нормативы утверждаются Рособрнадзором ежегодно. Регионы могут устанавливать дополнительные требования.</p>
-
         <h3>📜 Правила проведения</h3>
-        <ul>
-            <li>Обязательные предметы: русский язык и математика. Дополнительно сдаются 2 предмета по выбору.</li>
-            <li>Экзамены проходят в аккредитованных пунктах (ППЭ) с видеонаблюдением.</li>
-            <li>Запрещено проносить средства связи и справочные материалы, кроме утверждённых ФИПИ.</li>
-            <li>Результаты вносятся в федеральную систему в течение 5–10 рабочих дней.</li>
-            <li>При неудовлетворительном результате предусмотрена пересдача в резервные дни.</li>
-        </ul>
+        <ul><li>Обязательные: русский язык и математика + 2 предмета по выбору.</li>
+        <li>Экзамены в аккредитованных пунктах (ППЭ) с видеонаблюдением.</li>
+        <li>Запрещены средства связи и справочники, кроме утверждённых ФИПИ.</li>
+        <li>Результаты вносятся в систему за 5–10 дней. Пересдача в резервные дни.</li></ul>
         <h3>🔗 Официальные источники</h3>
-        <ul>
-            <li><a href="https://fipi.ru" target="_blank">ФИПИ — Демоверсии, спецификации, кодификаторы</a></li>
-            <li><a href="https://obrnadzor.gov.ru" target="_blank">Рособрнадзор — Приказы и нормативные акты</a></li>
-            <li><a href="https://gia.edu.ru" target="_blank">Портал ГИА — Регистрация и расписание</a></li>
-            <li><a href="https://minobrnauki.gov.ru" target="_blank">Министерство просвещения РФ</a></li>
-        </ul>
-        <a href="/" class="back">← Вернуться на главную</a>
+        <ul><li><a href="https://fipi.ru" target="_blank">ФИПИ</a></li><li><a href="https://obrnadzor.gov.ru" target="_blank">Рособрнадзор</a></li><li><a href="https://gia.edu.ru" target="_blank">Портал ГИА</a></li></ul>
+        <a href="/" style="display:block; margin-top:20px;">← Вернуться на главную</a>
     </div>
 </body>
 </html>

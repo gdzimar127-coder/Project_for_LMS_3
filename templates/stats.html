@@ -2,8 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет | Тренажёр ОГЭ</title>
+    <title>Личный кабинет</title>
     <style>
         body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; }
@@ -11,21 +10,14 @@
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
-        .btn { padding: 8px 16px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>👤 Кабинет: {{ username }}</h1>
-            <a href="/" style="color:#2563eb; text-decoration:none;">← На главную</a>
-        </header>
+        <header><h1>👤 Кабинет: {{ username }}</h1><a href="/" style="color:#2563eb;">← На главную</a></header>
         <div class="card">
             <h2>📈 История попыток</h2>
-            <table>
-                <thead><tr><th>Предмет</th><th>Результат</th><th>Дата</th></tr></thead>
-                <tbody id="stats-body"><tr><td colspan="3">Загрузка...</td></tr></tbody>
-            </table>
+            <table><thead><tr><th>Предмет</th><th>Результат</th><th>Дата</th></tr></thead><tbody id="stats-body"><tr><td colspan="3">Загрузка...</td></tr></tbody></table>
         </div>
     </div>
     <script>

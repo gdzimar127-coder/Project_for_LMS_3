@@ -5,73 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject.name }} | Тренажёр ОГЭ</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; }
+        :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; --success: #10b981; --purple: #8b5cf6; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; color: var(--text); }
         .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
-        .section { background: white; border-radius: 10px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .section-header { background: #f1f5f9; padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .section-content { padding: 10px 16px; display: none; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 1.5rem; }
+        .section { background: var(--card); border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; }
+        .section-header { background: #f1f5f9; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: 0.2s; }
+        .section-header:hover { background: #e2e8f0; }
+        .section-content { display: none; padding: 0 16px 16px; background: var(--card); }
         .section-content.active { display: block; }
-        .topic-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-        .topic-row:last-child { border-bottom: none; }
-        .tutor-btn { background: #8b5cf6; color: white; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; margin-left: 10px; }
-        .tutor-btn:hover { background: #7c3aed; }
-        .actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
-        .btn-primary { background: #2563eb; color: white; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-secondary { background: #64748b; color: white; }
+        .task-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .task-row:last-child { border-bottom: none; }
+        .task-row label { cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1; }
+        .task-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .tutor-btn { background: var(--purple); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; white-space: nowrap; margin-left: 10px; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
+        .tutor-btn:hover { background: #7c3aed; transform: translateY(-1px); }
+        .actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: var(--card); padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.95rem; transition: 0.2s; }
+        .btn-primary { background: var(--success); color: white; }
+        .btn-primary:hover { background: #059669; }
+        .btn-secondary { background: var(--muted); color: white; }
+        .btn-secondary:hover { background: #475569; }
+        #count-badge { margin-left: auto; color: var(--muted); font-weight: 500; }
+        .empty-msg { padding: 10px 0; color: #94a3b8; font-style: italic; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h2>📝 {{ subject.name }}</h2>
-            <a href="/subjects" style="color:#2563eb; text-decoration:none;">← Все предметы</a>
+            <h1>📝 {{ subject.name }}</h1>
+            <a href="/subjects" style="color: var(--primary); text-decoration: none;">← Все предметы</a>
         </header>
-        <p style="color:#64748b; margin-bottom:15px;">Выберите разделы и темы для тестирования</p>
+        <p style="color: var(--muted); margin-bottom: 20px;">Выберите разделы и темы для тестирования</p>
 
         {% for section in sections %}
         <div class="section">
             <div class="section-header" onclick="this.nextElementSibling.classList.toggle('active')">
                 <span>📂 {{ section.section_code }}. {{ section.name }}</span>
-                <span>▼</span>
+                <span style="font-size: 1.2rem;">▼</span>
             </div>
             <div class="section-content">
-                <!-- ИСПРАВЛЕНО: используется стандартный фильтр if + startswith вместо selectattr(match) -->
-                {% for task in tasks if task.fipi_code and task.fipi_code.startswith(section.section_code + '.') %}
-                <div class="topic-row">
-                    <label>
-                        <input type="checkbox" class="topic-check" data-code="{{ task.fipi_code }}" data-name="{{ task.topic_name or 'Тема ' + task.fipi_code }}">
-                        {{ task.fipi_code }} {{ task.topic_name or 'Тема ' + task.fipi_code }}
-                    </label>
-                    <a href="{{ url_for('generating.tutor_chat', subject=subject.name, topic=(task.topic_name or task.fipi_code)) }}" class="tutor-btn">👨‍🏫 Репетитор</a>
-                </div>
-                {% else %}
-                    <div style="padding:8px 0; color:#94a3b8;">По этому разделу пока нет заданий</div>
+                {% set has_tasks = namespace(value=false) %}
+                {% for task in tasks %}
+                    {% if task.fipi_code and task.fipi_code.startswith(section.section_code + '.') %}
+                        {% set has_tasks.value = true %}
+                        <div class="task-row">
+                            <label>
+                                <input type="checkbox" class="task-check" data-code="{{ task.fipi_code }}" data-topic="{{ task.topic_name or 'Тема ' + task.fipi_code }}">
+                                <span><strong>{{ task.fipi_code }}</strong> {{ task.topic_name or 'Тема ' + task.fipi_code }}</span>
+                            </label>
+                            <a href="{{ url_for('generating.tutor_chat', subject=subject.name, topic=(task.topic_name or task.fipi_code)) }}" class="tutor-btn">
+                                👨‍🏫 Репетитор
+                            </a>
+                        </div>
+                    {% endif %}
                 {% endfor %}
+                {% if not has_tasks.value %}
+                    <div class="empty-msg">Задания для этого раздела появятся позже</div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
 
         <div class="actions">
-            <button class="btn btn-success" onclick="startTest()">🚀 Начать тестирование</button>
-            <button class="btn btn-secondary" onclick="checkAll(true)">✅ Выбрать все</button>
-            <button class="btn btn-secondary" onclick="checkAll(false)">❌ Снять выделение</button>
-            <span id="count-badge" style="margin-left:auto; align-self:center; color:#64748b;">✅ Выбрано тем: 0</span>
+            <button class="btn btn-primary" onclick="startTest()">🚀 Начать тестирование</button>
+            <button class="btn btn-secondary" onclick="toggleAll(true)">✅ Выбрать все</button>
+            <button class="btn btn-secondary" onclick="toggleAll(false)">❌ Снять выделение</button>
+            <span id="count-badge">✅ Выбрано тем: 0</span>
         </div>
     </div>
+
     <script>
-        const subjectId = {{ subject.id }};
-        const checks = document.querySelectorAll('.topic-check');
-        checks.forEach(c => c.addEventListener('change', () => {
-            document.getElementById('count-badge').textContent = `✅ Выбрано тем: ${document.querySelectorAll('.topic-check:checked').length}`;
-        }));
-        function checkAll(val) { checks.forEach(c => c.checked = val); checks[0].dispatchEvent(new Event('change')); }
+        const checks = document.querySelectorAll('.task-check');
+        checks.forEach(c => c.addEventListener('change', updateCount));
+
+        function updateCount() {
+            const count = document.querySelectorAll('.task-check:checked').length;
+            document.getElementById('count-badge').textContent = `✅ Выбрано тем: ${count}`;
+        }
+
+        function toggleAll(val) {
+            checks.forEach(c => c.checked = val);
+            updateCount();
+        }
+
         function startTest() {
-            const selected = [...document.querySelectorAll('.topic-check:checked')].map(c => c.dataset.code);
-            if(selected.length === 0) return alert('Выберите хотя бы одну тему!');
-            window.location.href = `/training?subject_id=${subjectId}&fipi_codes=${selected.join(',')}`;
+            const selected = [...document.querySelectorAll('.task-check:checked')].map(c => c.dataset.topic);
+            if (selected.length === 0) {
+                alert('Выберите хотя бы одну тему для генерации заданий!');
+                return;
+            }
+            const subjectName = "{{ subject.name }}";
+            const topicParam = encodeURIComponent(selected[0]);
+            window.location.href = `/training?subject=${encodeURIComponent(subjectName)}&topic=${topicParam}`;
         }
     </script>
 </body>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Алиса | Тренажёр ОГЭ</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; }
+        .chat { max-width: 700px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); height: 70vh; display: flex; flex-direction: column; }
+        .header { padding: 15px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .status { color: #64748b; font-size: 0.9rem; }
+        .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 10px; }
+        .msg.bot { background: #f1f5f9; align-self: flex-start; }
+        .msg.user { background: #2563eb; color: white; align-self: flex-end; }
+        .input-area { padding: 15px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        button { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="chat">
+        <div class="header">
+            <div class="avatar">A</div>
+            <div><strong>Алиса</strong><br><span class="status">● онлайн</span></div>
+        </div>
+        <div class="messages" id="msgs">
+            <div class="msg bot">Привет! Я Алиса — ваш помощник для подготовки к экзаменам. 🎓<br>Что вы сдаете: ОГЭ или ЕГЭ?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="inp" placeholder="Введите сообщение..." onkeydown="if(event.key==='Enter')send()">
+            <button onclick="send()">Отправить</button>
+        </div>
+    </div>
+    <a href="/" style="display:block; text-align:center; margin-top:20px; color:#2563eb; text-decoration:none;">← Вернуться на главную</a>
+    <script>
+        function send() {
+            let t = document.getElementById('inp').value.trim();
+            if(!t) return;
+            let m = document.getElementById('msgs');
+            m.innerHTML += `<div class="msg user">${t}</div>`;
+            document.getElementById('inp').value = '';
+            m.scrollTop = m.scrollHeight;
+            setTimeout(()=>{
+                let reply = t.toLowerCase().includes('егэ') ? 'Отлично! Подготовка к ЕГЭ требует углублённого подхода. Выбери предмет в каталоге, и я помогу составить план.' : 'Хорошо! ОГЭ — отличный старт. Рекомендую начать с предметов по выбору. Чем могу помочь?';
+                m.innerHTML += `<div class="msg bot">${reply}</div>`;
+                m.scrollTop = m.scrollHeight;
+            }, 800);
+        }
+    </script>
+</body>
+</html>

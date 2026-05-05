@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор предмета | Тренажёр ОГЭ</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; }
+        h1 { margin: 0; }
+        .btn { display: inline-block; padding: 8px 16px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; transition: 0.2s; cursor: pointer; text-decoration: none; color: inherit; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .icon { font-size: 2.5rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Открытый банк заданий ОГЭ</h1>
+            {% if username %}
+                <div>👤 {{ username }} <a href="/logout" class="btn" style="background:#ef4444; margin-left:10px;">Выйти</a></div>
+            {% else %}
+                <a href="/" class="btn">Войти</a>
+            {% endif %}
+        </header>
+        <p style="margin-bottom:20px; color:#64748b;">Выберите предмет для подготовки:</p>
+        <div class="grid">
+            {% for subject in subjects %}
+            <a href="/topics/{{ subject.id }}" class="card">
+                <div class="icon">
+                    {% if subject.id == 1 %}📐{% elif subject.id == 2 %}📚{% elif subject.id == 3 %}💻{% elif subject.id == 4 %}👥
+                    {% elif subject.id == 5 %}⚛️{% elif subject.id == 6 %}🧬{% elif subject.id == 7 %}🌍{% elif subject.id == 8 %}⚗️
+                    {% elif subject.id == 9 %}🏛️{% elif subject.id == 10 %}✍️{% elif subject.id == 11 %}🇬🇧{% elif subject.id == 12 %}🇩🇪
+                    {% elif subject.id == 13 %}🇫🇷{% elif subject.id == 14 %}🇪🇸{% endif %}
+                </div>
+                <div>{{ subject.name }}</div>
+            </a>
+            {% endfor %}
+        </div>
+        <div style="margin-top:30px;"><a href="/" class="btn" style="background:#64748b;">← На главную</a></div>
+    </div>
+</body>
+</html>

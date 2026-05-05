@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject.name }} | Тренажёр ОГЭ</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f8fafc; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
+        .section { background: white; border-radius: 10px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .section-header { background: #f1f5f9; padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .section-content { padding: 10px 16px; display: none; }
+        .section-content.active { display: block; }
+        .topic-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .topic-row:last-child { border-bottom: none; }
+        .tutor-btn { background: #8b5cf6; color: white; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; margin-left: 10px; }
+        .tutor-btn:hover { background: #7c3aed; }
+        .actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h2>📝 {{ subject.name }}</h2>
+            <a href="/subjects" style="color:#2563eb; text-decoration:none;">← Все предметы</a>
+        </header>
+        <p style="color:#64748b; margin-bottom:15px;">Выберите разделы и темы для тестирования</p>
+
+        {% for section in sections %}
+        <div class="section">
+            <div class="section-header" onclick="this.nextElementSibling.classList.toggle('active')">
+                <span>📂 {{ section.section_code }}. {{ section.name }}</span>
+                <span>▼</span>
+            </div>
+            <div class="section-content">
+                <!-- ИСПРАВЛЕНО: используется стандартный фильтр if + startswith вместо selectattr(match) -->
+                {% for task in tasks if task.fipi_code and task.fipi_code.startswith(section.section_code + '.') %}
+                <div class="topic-row">
+                    <label>
+                        <input type="checkbox" class="topic-check" data-code="{{ task.fipi_code }}" data-name="{{ task.topic_name or 'Тема ' + task.fipi_code }}">
+                        {{ task.fipi_code }} {{ task.topic_name or 'Тема ' + task.fipi_code }}
+                    </label>
+                    <a href="{{ url_for('generating.tutor_chat', subject=subject.name, topic=(task.topic_name or task.fipi_code)) }}" class="tutor-btn">👨‍🏫 Репетитор</a>
+                </div>
+                {% else %}
+                    <div style="padding:8px 0; color:#94a3b8;">По этому разделу пока нет заданий</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="actions">
+            <button class="btn btn-success" onclick="startTest()">🚀 Начать тестирование</button>
+            <button class="btn btn-secondary" onclick="checkAll(true)">✅ Выбрать все</button>
+            <button class="btn btn-secondary" onclick="checkAll(false)">❌ Снять выделение</button>
+            <span id="count-badge" style="margin-left:auto; align-self:center; color:#64748b;">✅ Выбрано тем: 0</span>
+        </div>
+    </div>
+    <script>
+        const subjectId = {{ subject.id }};
+        const checks = document.querySelectorAll('.topic-check');
+        checks.forEach(c => c.addEventListener('change', () => {
+            document.getElementById('count-badge').textContent = `✅ Выбрано тем: ${document.querySelectorAll('.topic-check:checked').length}`;
+        }));
+        function checkAll(val) { checks.forEach(c => c.checked = val); checks[0].dispatchEvent(new Event('change')); }
+        function startTest() {
+            const selected = [...document.querySelectorAll('.topic-check:checked')].map(c => c.dataset.code);
+            if(selected.length === 0) return alert('Выберите хотя бы одну тему!');
+            window.location.href = `/training?subject_id=${subjectId}&fipi_codes=${selected.join(',')}`;
+        }
+    </script>
+</body>
+</html>

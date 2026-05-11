@@ -1,15 +1,12 @@
-import os
-import sqlite3
 import re
-import json
-from datetime import datetime
-from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3
 from ai_generator import ai_bp
+from functools import wraps
 from generating import gen_bp
 
-# ✅ Исправлено: __name__ вместо name
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+
 app = Flask(__name__)
 app.secret_key = 'super-secret-key-change-me-in-production'
 DB_PATH = 'users.db'
@@ -29,7 +26,6 @@ def init_db():
         conn = get_db()
         c = conn.cursor()
 
-        # ✅ Исправлены артефакты в SQL: T EXT → TEXT, INTEGE R → INTEGER и т.д.
         c.execute('''CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
@@ -80,7 +76,6 @@ def init_db():
                 (10, 'Литература'), (11, 'Английский язык'), (12, 'Немецкий язык'),
                 (13, 'Французский язык'), (14, 'Испанский язык')
             ]
-            # ✅ Исправлено: subjects вместо subje cts
             c.executemany('INSERT INTO subjects (id, name) VALUES (?, ?)', subjects)
 
             all_sections = [
@@ -103,7 +98,6 @@ def init_db():
                 (7, 'География России', '7'), (7, 'Оболочки Земли', '4'),
                 (8, 'Первоначальные химические понятия', '1'), (8, 'Химические реакции', '5'),
                 (9, 'От Руси к Российскому государству', '1'), (9, 'История России XX века', '4'),
-                # Ваш оригинальный список тем по литературе (без изменений)
                 (10, '«Слово о полку Игореве»', '1'), (10, 'М.В. Ломоносов. Стихотворения', '2'),
                 (10, 'Д.И. Фонвизин. Комедия «Недоросль»', '3'),
                 (10, 'Г.Р. Державин. Стихотворения', '4'),
@@ -224,7 +218,6 @@ def subjects_page():
     return render_template('subjects.html', subjects=subjects, username=session.get('username'))
 
 
-# ✅ Исправлен синтаксис маршрута: <int:subject_id> вместо [int:subject_id](int:subject_id)
 @app.route('/topics/<int:subject_id>')
 @login_required
 def topics_page(subject_id):
@@ -275,7 +268,6 @@ def profile_stats():
     return jsonify({'history': res})
 
 
-# ✅ Исправлено: __name__ == '__main__' вместо name == 'main'
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=5000)

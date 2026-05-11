@@ -15,7 +15,6 @@ def login_required(f):
     return decorated
 
 def clean_ai_json(text):
-    """Убирает markdown-обёртки и мусор, возвращает валидный JSON"""
     text = re.sub(r'^```(?:json)?\s*|\s*```$', '', text.strip(), flags=re.MULTILINE)
     match = re.search(r'\[.*\]', text, re.DOTALL)
     if match:
@@ -28,7 +27,7 @@ def generate_questions():
     data = request.json
     subject = data.get('subject', 'Математика')
     topic = data.get('topic', 'Общие темы')
-    count = min(int(data.get('count', 5)), 15)  # Ограничение до 15 вопросов для стабильности
+    count = min(int(data.get('count', 5)), 15)
 
     prompt = f"""Ты эксперт по подготовке к ОГЭ. Сгенерируй ровно {count} заданий по предмету "{subject}" на тему "{topic}".
 Каждое задание должно соответствовать формату ОГЭ. Верни ТОЛЬКО валидный JSON-массив без markdown-обёрток и пояснений.

@@ -25,18 +25,15 @@ def tutor_chat():
     topic = request.args.get('topic', '')
     username = session.get('username', 'ученик')
 
-    # ✅ Определяем, пришёл ли пользователь с главной страницы
     is_from_main = subject in ['Общий вопрос', '', 'General']
 
     key = f"{username}_{subject}_{topic}"
 
     if key not in chat_histories:
         if is_from_main:
-            # ✅ Приветствие при переходе с главной
             system_prompt = f"Ты опытный репетитор ОГЭ/ЕГЭ. Обращайся к ученику по имени '{username}'. Будь дружелюбным, объясняй понятно, с примерами. Отвечай только на русском."
             greeting = f"Здравствуйте {username}, я ваш репетитор для подготовки к ОГЭ/ЕГЭ, давайте разберем непонятную тему. С чего начнём?"
         else:
-            # Стандартное приветствие для конкретной темы
             system_prompt = f"Ты репетитор ОГЭ по предмету '{subject}'. Объясняй тему '{topic}' подробно. Отвечай на русском."
             greeting = f"Здравствуйте! Я репетитор по предмету '{subject}'. Какая тема вас интересует?"
 
@@ -112,7 +109,6 @@ TUTOR_HTML = """
             <a href="javascript:history.back()">← Назад</a>
         </div>
         <div class="messages" id="msgs">
-            <!-- ✅ Приветствие при загрузке -->
             <div class="msg ai">{{ greeting }}</div>
         </div>
         <div class="input-area">
